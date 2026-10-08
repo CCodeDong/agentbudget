@@ -1,0 +1,6 @@
+[planner->executor] instruction: {"query":"quarterly 	13
+[planner->executor] instruction: {"query":"quarterly report","limit":"5"}	18
+[planner->executor] instruction: {"query":"quarterly report","limit":"5"}	18
+[planner->executor] instruction: {"query":"quarterly report","limit":"5"}	18
+planner|executor|instruction|{"query":"quarterly report","limit":"5"}	17
+Agent planner is sending the following instruction to agent executor: {"query":"quarterly report","limit":"5"}	27

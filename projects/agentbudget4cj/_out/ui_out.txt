@@ -1,0 +1,6 @@
+edge	structured	two-stage-top3	418	3	file.search,web.search,battery.status,	wide-area weak unusable; LAN survives
+on-device	structured	two-stage-top3	418	3	file.search,web.search,battery.status,	no remote tier viable
+edge	structured	two-stage-top3	418	3	file.search,web.search,battery.status,	edge reachable on LAN
+cloud	structured	two-stage-top3	418	3	file.search,web.search,battery.status,	hard step, wide-area viable, headroom left
+edge	summary	eager	1254	0	calendar.create,contact.lookup,file.search,notice.send,web.search,sms.send,email.compose,music.play,map.navigate,timer.set,alarm.create,weather.query,translate.text,clipboard.read,battery.status,	wide-area weak unusable; LAN survives
+edge	structured	two-stage-top3	418	3	file.search,web.search,battery.status,	wide-area weak unusable; LAN survives

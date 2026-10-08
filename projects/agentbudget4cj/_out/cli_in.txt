@@ -1,0 +1,6 @@
+0.2 wifi 20 0 1 500 8000 10 budget
+0.9 wifi 20 0 1 500 8000 10 budget
+0.9 weak 1500 1 1 500 8000 10 budget
+0.9 weak 1500 1 0 500 8000 10 budget
+0.2 wifi 20 0 1 7000 8000 10 budget
+0.9 wifi 20 0 1 500 8000 10 eager

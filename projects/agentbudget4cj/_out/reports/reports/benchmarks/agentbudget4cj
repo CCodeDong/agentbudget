@@ -1,0 +1,9 @@
+{
+  "TestCaseId(TestSuiteId(agentbudget4cj, TestCase_benchEstimateTokens), benchEstimateTokens)-_Duration[0]": 1122139.356242,
+  "TestCaseId(TestSuiteId(agentbudget4cj, TestCase_benchEagerSchemas), benchEagerSchemas)-_Duration[0]": 502986.867606,
+  "TestCaseId(TestSuiteId(agentbudget4cj, TestCase_benchStagedSchemas), benchStagedSchemas)-_Duration[0]": 6179801.999088,
+  "TestCaseId(TestSuiteId(agentbudget4cj, TestCase_benchSchedulerPlan), benchSchedulerPlan)-_Duration[0]": 57070701.387271,
+  "TestCaseId(TestSuiteId(agentbudget4cj, TestCase_benchSummaryPoolOnly), benchSummaryPoolOnly)-_Duration[0]": 870923.321364,
+  "TestCaseId(TestSuiteId(agentbudget4cj, TestCase_benchSelectTopKOnly), benchSelectTopKOnly)-_Duration[0]": 4763363.54208,
+  "TestCaseId(TestSuiteId(agentbudget4cj, TestCase_benchFullSchemaRenderOnly), benchFullSchemaRenderOnly)-_Duration[0]": 494096.960345
+}

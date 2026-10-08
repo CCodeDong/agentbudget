@@ -1,0 +1,2 @@
+Case,Args,Median,Err,Err%,Mean,Unit,Measurement
+"benchEstimateTokens",,"660609.518644","138327.971409","20.9","1090360.982105","ns","Duration"

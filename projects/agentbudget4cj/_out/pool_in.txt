@@ -1,0 +1,4 @@
+pool|5
+0.55 wifi 20 0 1 4400 8000 10 budget 3 search my files for the quarterly report
+pool|0
+0.55 wifi 20 0 1 4400 8000 10 budget 3 search my files for the quarterly report

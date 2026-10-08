@@ -1,0 +1,21 @@
+[package]
+  cjc-version = "1.0.5"
+  name = "stdxjson"
+  description = "stdx smoke test"
+  version = "1.0.0"
+  target-dir = ""
+  output-type = "executable"
+  compile-option = ""
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+
+[dependencies]
+
+# stdx is not on any central registry; it is wired in by absolute path.
+# Use a TOML literal string (single quotes) so Windows backslashes need no
+# escaping. stdx 1.0.5.1 uses the directory name windows_x86_64_cjnative,
+# NOT windows_x86_64_llvm (that name belongs to 1.0.4.x and older guides).
+[target.x86_64-w64-mingw32]
+  [target.x86_64-w64-mingw32.bin-dependencies]
+    path-option = ['C:\Users\86178\Documents\deepseek-harness\项目开发\stdx\windows_x86_64_cjnative\dynamic\stdx']

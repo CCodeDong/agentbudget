@@ -1,0 +1,1 @@
+edge	structured	two-stage-top6	671	6	file.search,web.search,battery.status,calendar.create,contact.lookup,notice.send,	edge reachable on LAN

@@ -1,0 +1,9 @@
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "Entry HAP: multi-agent orchestration UI",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {}
+}

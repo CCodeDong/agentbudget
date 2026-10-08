@@ -1,0 +1,68 @@
+[
+  {
+    "mode": "budget",
+    "net": "weak_lan",
+    "runs": 3,
+    "success_rate": 1.0,
+    "mean_prompt_tokens": 586,
+    "mean_latency_ms": 502.62,
+    "cloud_calls": 0,
+    "gold_retrieved_rate": 1.0,
+    "routes": "{\"edge\": 3}"
+  },
+  {
+    "mode": "budget",
+    "net": "weak_nolan",
+    "runs": 3,
+    "success_rate": 1.0,
+    "mean_prompt_tokens": 586,
+    "mean_latency_ms": 499.29,
+    "cloud_calls": 0,
+    "gold_retrieved_rate": 1.0,
+    "routes": "{\"on-device\": 3}"
+  },
+  {
+    "mode": "budget",
+    "net": "wifi_lan",
+    "runs": 3,
+    "success_rate": 1.0,
+    "mean_prompt_tokens": 586,
+    "mean_latency_ms": 496.19,
+    "cloud_calls": 3,
+    "gold_retrieved_rate": 1.0,
+    "routes": "{\"cloud\": 3}"
+  },
+  {
+    "mode": "eager",
+    "net": "weak_lan",
+    "runs": 3,
+    "success_rate": 1.0,
+    "mean_prompt_tokens": 586,
+    "mean_latency_ms": 501.25,
+    "cloud_calls": 0,
+    "gold_retrieved_rate": 1.0,
+    "routes": "{\"on-device\": 3}"
+  },
+  {
+    "mode": "eager",
+    "net": "weak_nolan",
+    "runs": 3,
+    "success_rate": 1.0,
+    "mean_prompt_tokens": 586,
+    "mean_latency_ms": 495.98,
+    "cloud_calls": 0,
+    "gold_retrieved_rate": 1.0,
+    "routes": "{\"on-device\": 3}"
+  },
+  {
+    "mode": "eager",
+    "net": "wifi_lan",
+    "runs": 3,
+    "success_rate": 1.0,
+    "mean_prompt_tokens": 586,
+    "mean_latency_ms": 512.35,
+    "cloud_calls": 3,
+    "gold_retrieved_rate": 1.0,
+    "routes": "{\"cloud\": 3}"
+  }
+]

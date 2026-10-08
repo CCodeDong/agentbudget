@@ -1,0 +1,6 @@
+edge	natural	eager	354	edge reachable on LAN
+cloud	natural	eager	354	hard step, wide-area viable, headroom left
+edge	natural	eager	354	wide-area weak unusable; LAN survives
+on-device	natural	eager	354	no remote tier viable
+edge	structured	two-stage-top3	271	edge reachable on LAN
+cloud	natural	eager-all	354	cloud preferred

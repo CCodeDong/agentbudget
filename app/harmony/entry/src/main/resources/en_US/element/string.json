@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "On-device multi-agent orchestration module"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "Multi-agent orchestration with budget scheduling"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "Edge Agents"
+    }
+  ]
+}

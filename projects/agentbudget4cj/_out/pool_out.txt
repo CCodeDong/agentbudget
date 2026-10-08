@@ -1,0 +1,4 @@
+ok	pool=5
+edge	summary	two-stage-top3	345	3	file.search,web.search,calendar.create,	edge reachable on LAN
+ok	pool=15
+edge	summary	two-stage-top3	418	3	file.search,web.search,battery.status,	edge reachable on LAN

@@ -1,0 +1,6 @@
+{
+  "TestCaseId(TestSuiteId(agentbudget4cj, TestCase_benchEstimateTokens), benchEstimateTokens)-_Duration[0]": 1090360.982105,
+  "TestCaseId(TestSuiteId(agentbudget4cj, TestCase_benchEagerSchemas), benchEagerSchemas)-_Duration[0]": 467454.123739,
+  "TestCaseId(TestSuiteId(agentbudget4cj, TestCase_benchStagedSchemas), benchStagedSchemas)-_Duration[0]": 10227125.810197,
+  "TestCaseId(TestSuiteId(agentbudget4cj, TestCase_benchSchedulerPlan), benchSchedulerPlan)-_Duration[0]": 57661572.798449
+}

@@ -1,0 +1,12 @@
+edge	structured	two-stage-top3	418	3	file.search,web.search,battery.status,	edge reachable on LAN
+edge	structured	two-stage-top4	496	4	contact.lookup,clipboard.read,file.search,web.search,	edge reachable on LAN
+edge	structured	two-stage-top2	334	2	notice.send,sms.send,	edge reachable on LAN
+edge	structured	two-stage-top5	609	5	calendar.create,contact.lookup,file.search,notice.send,web.search,	edge reachable on LAN
+edge	structured	two-stage-top3	418	3	file.search,web.search,battery.status,	edge reachable on LAN
+edge	structured	two-stage-top4	496	4	contact.lookup,clipboard.read,file.search,web.search,	edge reachable on LAN
+edge	structured	two-stage-top2	334	2	notice.send,sms.send,	edge reachable on LAN
+edge	structured	two-stage-top5	609	5	calendar.create,contact.lookup,file.search,notice.send,web.search,	edge reachable on LAN
+edge	structured	two-stage-top1	262	1	file.search,	edge reachable on LAN
+edge	structured	two-stage-top2	307	2	contact.lookup,clipboard.read,	edge reachable on LAN
+edge	structured	two-stage-top1	243	1	notice.send,	edge reachable on LAN
+edge	structured	two-stage-top5	609	5	calendar.create,contact.lookup,file.search,notice.send,web.search,	edge reachable on LAN

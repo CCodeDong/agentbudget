@@ -1,0 +1,3 @@
+edge	structured	two-stage-top1	262	file.search,	edge reachable on LAN
+edge	structured	two-stage-top2	355	file.search,web.search,	edge reachable on LAN
+edge	structured	two-stage-top5	594	file.search,web.search,battery.status,calendar.create,contact.lookup,	edge reachable on LAN

@@ -1,0 +1,10 @@
+edge	summary	two-stage-top8	873	8	file.search,web.search,battery.status,calendar.create,contact.lookup,notice.send,sms.send,email.compose,	edge reachable on LAN
+edge	structured	two-stage-top8	873	8	file.search,web.search,battery.status,calendar.create,contact.lookup,notice.send,sms.send,email.compose,	edge reachable on LAN
+edge	structured	two-stage-top6	671	6	file.search,web.search,battery.status,calendar.create,contact.lookup,notice.send,	edge reachable on LAN
+edge	structured	two-stage-top3	418	3	file.search,web.search,battery.status,	edge reachable on LAN
+edge	structured	two-stage-top1	262	1	file.search,	edge reachable on LAN
+edge	summary	two-stage-top3	418	3	file.search,web.search,battery.status,	edge reachable on LAN
+edge	structured	two-stage-top3	418	3	file.search,web.search,battery.status,	edge reachable on LAN
+edge	structured	two-stage-top3	418	3	file.search,web.search,battery.status,	edge reachable on LAN
+edge	structured	two-stage-top3	418	3	file.search,web.search,battery.status,	edge reachable on LAN
+edge	structured	two-stage-top3	418	3	file.search,web.search,battery.status,	edge reachable on LAN

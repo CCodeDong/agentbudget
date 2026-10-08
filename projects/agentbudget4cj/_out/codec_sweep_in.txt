@@ -1,0 +1,6 @@
+codec|summary|20|planner|executor|instruction|{"query":"quarterly report","limit":"5"}
+codec|summary|40|planner|executor|instruction|{"query":"quarterly report","limit":"5"}
+codec|summary|80|planner|executor|instruction|{"query":"quarterly report","limit":"5"}
+codec|summary|160|planner|executor|instruction|{"query":"quarterly report","limit":"5"}
+codec|structured|40|planner|executor|instruction|{"query":"quarterly report","limit":"5"}
+codec|natural|40|planner|executor|instruction|{"query":"quarterly report","limit":"5"}

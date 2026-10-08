@@ -1,0 +1,4 @@
+0.4 wifi 20 0 1 300 8000 10 budget search my files for the quarterly report
+0.4 wifi 20 0 1 300 8000 10 budget send a notification to remind me
+0.4 wifi 20 0 1 300 8000 10 budget look up the phone number of a contact
+0.4 wifi 20 0 1 300 8000 10 eager search my files for the quarterly report

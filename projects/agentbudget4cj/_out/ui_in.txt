@@ -1,0 +1,6 @@
+0.8 weak 1500 1 1 6800 8000 10 budget -50 search my files for the quarterly report
+0.8 weak 1500 1 0 6800 8000 10 budget -50 search my files for the quarterly report
+0.8 wifi 20 0 1 6800 8000 10 budget -50 search my files for the quarterly report
+0.8 wifi 20 0 1 6000 8000 10 budget -50 search my files for the quarterly report
+0.8 weak 1500 1 1 3600 8000 10 budget -50 search my files for the quarterly report
+0.8 weak 1500 1 1 6800 8000 10 budget -50 search my files for the quarterly report

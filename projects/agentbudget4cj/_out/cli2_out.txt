@@ -1,0 +1,4 @@
+edge	natural	eager	354	calendar.create,contact.lookup,file.search,notice.send,web.search,	edge reachable on LAN
+edge	natural	eager	354	calendar.create,contact.lookup,file.search,notice.send,web.search,	edge reachable on LAN
+edge	natural	eager	354	calendar.create,contact.lookup,file.search,notice.send,web.search,	edge reachable on LAN
+cloud	natural	eager-all	354	calendar.create,contact.lookup,file.search,notice.send,web.search,	cloud preferred

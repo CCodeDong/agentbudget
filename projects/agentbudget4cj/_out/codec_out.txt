@@ -1,0 +1,3 @@
+Agent planner is sending the following instruction to agent executor: {"query":"quarterly report","limit":"5"}	27
+[planner->executor] instruction: {"query":"quarterly report","limit":"5"}	18
+planner|executor|instruction|{"query":"quarterly report","limit":"5"}	17

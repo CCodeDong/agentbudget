@@ -1,0 +1,65 @@
+[
+  {
+    "form": "natural",
+    "budget": "-",
+    "mean_tokens": 28.8,
+    "intact": 30,
+    "intact_pct": 100.0
+  },
+  {
+    "form": "structured",
+    "budget": "-",
+    "mean_tokens": 18.8,
+    "intact": 30,
+    "intact_pct": 100.0
+  },
+  {
+    "form": "summary",
+    "budget": 20,
+    "mean_tokens": 13.0,
+    "intact": 12,
+    "intact_pct": 40.0
+  },
+  {
+    "form": "summary",
+    "budget": 40,
+    "mean_tokens": 16.8,
+    "intact": 30,
+    "intact_pct": 100.0
+  },
+  {
+    "form": "summary",
+    "budget": 60,
+    "mean_tokens": 19.8,
+    "intact": 30,
+    "intact_pct": 100.0
+  },
+  {
+    "form": "summary",
+    "budget": 80,
+    "mean_tokens": 19.8,
+    "intact": 30,
+    "intact_pct": 100.0
+  },
+  {
+    "form": "summary",
+    "budget": 120,
+    "mean_tokens": 19.8,
+    "intact": 30,
+    "intact_pct": 100.0
+  },
+  {
+    "form": "summary",
+    "budget": 160,
+    "mean_tokens": 19.8,
+    "intact": 30,
+    "intact_pct": 100.0
+  },
+  {
+    "form": "summary",
+    "budget": 320,
+    "mean_tokens": 19.8,
+    "intact": 30,
+    "intact_pct": 100.0
+  }
+]

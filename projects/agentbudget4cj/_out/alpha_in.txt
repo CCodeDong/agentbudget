@@ -1,0 +1,12 @@
+0.5 wifi 20 0 1 7000 8000 10 budget -33 search my files for the quarterly report
+0.5 wifi 20 0 1 7000 8000 10 budget -33 look up a contact named Li Wei in my address book
+0.5 wifi 20 0 1 7000 8000 10 budget -33 send a notification to remind me about the deadline
+0.5 wifi 20 0 1 7000 8000 10 budget -33 find online the release notes for the new version
+0.5 wifi 20 0 1 7000 8000 10 budget -50 search my files for the quarterly report
+0.5 wifi 20 0 1 7000 8000 10 budget -50 look up a contact named Li Wei in my address book
+0.5 wifi 20 0 1 7000 8000 10 budget -50 send a notification to remind me about the deadline
+0.5 wifi 20 0 1 7000 8000 10 budget -50 find online the release notes for the new version
+0.5 wifi 20 0 1 7000 8000 10 budget -67 search my files for the quarterly report
+0.5 wifi 20 0 1 7000 8000 10 budget -67 look up a contact named Li Wei in my address book
+0.5 wifi 20 0 1 7000 8000 10 budget -67 send a notification to remind me about the deadline
+0.5 wifi 20 0 1 7000 8000 10 budget -67 find online the release notes for the new version

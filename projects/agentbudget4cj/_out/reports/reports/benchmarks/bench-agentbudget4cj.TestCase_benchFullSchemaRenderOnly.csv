@@ -1,0 +1,2 @@
+Case,Args,Median,Err,Err%,Mean,Unit,Measurement
+"benchFullSchemaRenderOnly",,"502092.680473","11487.527713","2.3","494096.960345","ns","Duration"

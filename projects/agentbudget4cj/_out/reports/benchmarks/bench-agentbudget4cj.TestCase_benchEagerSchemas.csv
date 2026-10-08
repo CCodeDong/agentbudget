@@ -1,0 +1,2 @@
+Case,Args,Median,Err,Err%,Mean,Unit,Measurement
+"benchEagerSchemas",,"466657.156627","7566.623803","1.6","467454.123739","ns","Duration"

@@ -1,0 +1,230 @@
+{
+  "python": "3.13.12",
+  "platform": "Windows 11",
+  "suites": [
+    {
+      "out": "results_pool15_fixed",
+      "why": "§6.1/§6.3 — pool-size contrast and placement on the corrected retrieval (the run before the stopword fix is kept separately)",
+      "args": [
+        "--modes",
+        "eager,budget",
+        "--nets",
+        "wifi,weak_lan,weak_nolan",
+        "--utils",
+        "0.25,0.55,0.85"
+      ],
+      "historical": false,
+      "runs": 540,
+      "runs_csv_sha256_16": "be850de483f1bed8"
+    },
+    {
+      "out": "results_ksweep",
+      "why": "§6.2 — the free compression region (top-k sweep)",
+      "args": [
+        "--modes",
+        "eager,budget",
+        "--nets",
+        "wifi",
+        "--utils",
+        "0.85",
+        "--ks",
+        "1,2,3,5,8"
+      ],
+      "historical": false,
+      "runs": 300,
+      "runs_csv_sha256_16": "d595560861ce467a"
+    },
+    {
+      "out": "results_multiturn",
+      "why": "§6.4 — message representation in the three-agent loop",
+      "args": [
+        "--multiturn",
+        "--modes",
+        "eager,budget",
+        "--nets",
+        "wifi",
+        "--utils",
+        "0.1,0.45,0.85",
+        "--ks",
+        "3"
+      ],
+      "historical": false,
+      "runs": 180,
+      "runs_csv_sha256_16": "1e3226553525a67a"
+    },
+    {
+      "out": "results_sumbudget",
+      "why": "§6.4 — truncation-budget sensitivity",
+      "args": [
+        "--multiturn",
+        "--modes",
+        "budget",
+        "--nets",
+        "wifi",
+        "--utils",
+        "0.45,0.85",
+        "--ks",
+        "3",
+        "--summary-budgets",
+        "20,40,80,160,320"
+      ],
+      "historical": false,
+      "runs": 300,
+      "runs_csv_sha256_16": "d4970b8620fd5388"
+    },
+    {
+      "out": "results_adaptive",
+      "why": "§6.6 — the NEGATIVE result: a budget-derived k is dominated",
+      "args": [
+        "--multiturn",
+        "--modes",
+        "budget",
+        "--nets",
+        "wifi",
+        "--utils",
+        "0.6,0.75,0.9",
+        "--ks",
+        "0,1,3,5,8"
+      ],
+      "historical": false,
+      "runs": 450,
+      "runs_csv_sha256_16": "e75d8865b95e92f9"
+    },
+    {
+      "out": "results_score_k",
+      "why": "§6.7 — the resolution: a retrieval-derived k dominates every fixed k",
+      "args": [
+        "--multiturn",
+        "--modes",
+        "budget",
+        "--nets",
+        "wifi",
+        "--utils",
+        "0.6,0.75,0.9",
+        "--ks",
+        "-50,0,1,3,5,8"
+      ],
+      "historical": false,
+      "runs": 540,
+      "runs_csv_sha256_16": "77751ad396b203d1"
+    },
+    {
+      "out": "results_pool5_fixed",
+      "why": "§6.1/§6.3 — the five-tool pool under the CURRENT retrieval. Regenerated after it was found that pairing the pre-fix five-tool run with the post-fix fifteen-tool run manufactured a contrast that does not exist (see docs/07).",
+      "args": [
+        "--pool",
+        "5",
+        "--modes",
+        "eager,budget",
+        "--nets",
+        "wifi,weak_lan,weak_nolan",
+        "--utils",
+        "0.25,0.55,0.85"
+      ],
+      "historical": false,
+      "runs": 540,
+      "runs_csv_sha256_16": "d857d12a442fcdd7"
+    },
+    {
+      "out": "results_smoke",
+      "why": "plumbing smoke test (3 tasks per profile)",
+      "args": [
+        "--limit",
+        "3"
+      ],
+      "historical": false,
+      "runs": 18,
+      "runs_csv_sha256_16": "46ccf228eff0ad27"
+    },
+    {
+      "out": "results_mt_smoke",
+      "why": "multi-turn plumbing smoke test (2 tasks per profile)",
+      "args": [
+        "--multiturn",
+        "--nets",
+        "wifi",
+        "--utils",
+        "0.1,0.45,0.85",
+        "--ks",
+        "3",
+        "--limit",
+        "2"
+      ],
+      "historical": false,
+      "runs": 12,
+      "runs_csv_sha256_16": "2d7890b5d5568f71"
+    },
+    {
+      "out": "results",
+      "why": "SUPERSEDED — the original five-tool run, produced before the retrieval normalisation fix. Kept as the record of that defect, but it must never be compared against results_pool15_fixed.",
+      "args": null,
+      "historical": true,
+      "runs": 540,
+      "runs_csv_sha256_16": "a4343658aefef6ee"
+    },
+    {
+      "out": "results_pool15",
+      "why": "SUPERSEDED — the fifteen-tool run before the retrieval fix; this is the evidence for the stopword defect (k=3 gave 0.900).",
+      "args": null,
+      "historical": true,
+      "runs": 540,
+      "runs_csv_sha256_16": "2a053f033d120bbb"
+    }
+  ],
+  "derived": [
+    {
+      "label": "codec chain analysis (no model)"
+    },
+    {
+      "label": "token estimator audit"
+    },
+    {
+      "label": "figures"
+    },
+    {
+      "label": "paper cross-reference check"
+    },
+    {
+      "label": "app/library consistency"
+    }
+  ],
+  "figures": [
+    {
+      "name": "fig1_pareto_k.png",
+      "sha256_16": "cd0cb31cde255e43"
+    },
+    {
+      "name": "fig2_pool_size.png",
+      "sha256_16": "7ea8ecd2b892a638"
+    },
+    {
+      "name": "fig3_message_form.png",
+      "sha256_16": "bd1810d6bd03521d"
+    },
+    {
+      "name": "fig4_routing.png",
+      "sha256_16": "22070d9a7e717550"
+    },
+    {
+      "name": "fig5_retrieval_fix.png",
+      "sha256_16": "d1da9d404f3382bb"
+    },
+    {
+      "name": "fig6_a2a_envelope.png",
+      "sha256_16": "6d19926fa04904a7"
+    },
+    {
+      "name": "fig7_summary_budget.png",
+      "sha256_16": "42993e52b9f3dc65"
+    },
+    {
+      "name": "fig8_adaptive_k.png",
+      "sha256_16": "a71ce194c65b3b5b"
+    },
+    {
+      "name": "fig9_score_driven_k.png",
+      "sha256_16": "9e8774d7ad8d947b"
+    }
+  ],
+  "total_runs": 3960
+}

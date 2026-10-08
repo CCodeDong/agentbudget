@@ -1,0 +1,3 @@
+codec|natural|planner|executor|instruction|{"query":"quarterly report","limit":"5"}
+codec|summary|planner|executor|instruction|{"query":"quarterly report","limit":"5"}
+codec|structured|planner|executor|instruction|{"query":"quarterly report","limit":"5"}
