@@ -7,23 +7,63 @@
 
 ---
 
-## 0. 现在的状态
+## 0. 现在的状态 —— **已经全部完成，可以直接用了**
 
-我已经在这台电脑上做完了这些（**你不用重做**）：
+2026-09 更新：仓库已建立并成功推送。**队友直接跳到第 6 节「克隆」即可。**
 
 | 项目 | 状态 |
 |---|---|
-| Git 安装 | ✅ 已有 `git version 2.53.0.windows.1` |
-| 本地仓库 | ✅ 已初始化，位置 `C:\Users\86178\Documents\deepseek-harness\Project\.git` |
-| 忽略规则 | ✅ `.gitignore` 已写好，排除了约 60 MB 构建缓存 |
-| 首次提交 | ✅ `c1d7706`，212 文件 / 24,296 行 / 16.4 MB |
-| 分支名 | `master`（**GitHub 默认叫 `main`，第 3 步会改**） |
+| Git 安装 | ✅ `git version 2.53.0.windows.1` |
+| 本地仓库 | ✅ `C:\Users\86178\Documents\deepseek-harness\Project\.git` |
+| 忽略规则 | ✅ `.gitignore` 已写好，排除约 60 MB 构建缓存 |
+| Git 身份 | ✅ `CCodeDong <3221162228@qq.com>`（**仓库级**，见下方说明） |
+| 首次提交 | ✅ `51d9037`，213 文件 / 16.4 MB |
+| 分支名 | ✅ `main`（已与 GitHub 默认一致） |
+| 远程地址 | ✅ `https://github.com/CCodeDong/agentbudget.git` |
+| **推送** | ✅ **已完成，本地与远程 commit 完全一致** |
+| 认证 | ✅ 无需操作（本机 Git 凭据管理器已有缓存凭据） |
 
-**你要做的**是从第 1 步开始。
+### ⚠️ 三个与原计划不同之处，需要知道
+
+**① Git 身份设在了「仓库级」而不是「全局级」**
+
+原计划用 `git config --global`，但当前环境的沙箱不允许写全局配置文件
+（`C:\Users\86178\.gitconfig` 报 `Permission denied`）。改为**只对本仓库生效**：
+
+```powershell
+cd C:\Users\86178\Documents\deepseek-harness\Project
+git config user.name  "CCodeDong"
+git config user.email "3221162228@qq.com"
+```
+
+**这反而更好**：你的全局身份仍是 GitCode 的（`2603_95354193@noreply.gitcode.com`），
+如果之后要参加开源鸿蒙大赛往 GitCode 推代码，两套身份互不干扰。
+
+> 若将来想让全局也改成 GitHub 身份，在**你自己的、非受限的** PowerShell 里跑：
+> ```powershell
+> git config --global user.name "CCodeDong"
+> git config --global user.email "3221162228@qq.com"
+> ```
+> 注意邮箱**不要带多余空格**。
+
+**② 第 4 节（登录 / token）可以跳过**
+
+推送时没有要求输入任何凭据——本机 Git 凭据管理器（Git Credential Manager）
+已缓存 GitHub 凭据。**如果以后换电脑或凭据失效**，再回来看第 4 节。
+
+**③ 顺带发现：hosts 文件里有屏蔽规则**
+
+你的 `C:\Windows\System32\drivers\etc\hosts` 有 **50 条**把站点指向 `127.0.0.1` 的规则，
+包括 `github.com`、`api.github.com`、`huggingface.co`、`store.steampowered.com` 等。
+
+**实测 git 访问 GitHub 正常**，所以这不影响本项目。
+但这说明这台机器装过某种屏蔽工具，**如果以后 GitHub 时通时不通，先怀疑这里**。
+修改需要管理员权限。
 
 ---
 
-## 1. 先改掉你的 Git 身份（**重要**）
+## 1. 改 Git 身份（**已完成，保留供参考**）
+
 
 你电脑上现在的 Git 身份是 **GitCode** 的：
 
