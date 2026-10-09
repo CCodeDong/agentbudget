@@ -1,0 +1,72 @@
+{
+  "source": "D:\\develop\\DevEco Studio\\sdk\\default\\hms\\ets\\api\\device-define",
+  "note": "从本地 SDK 元数据现场提取，可复现",
+  "rows": [
+    {
+      "capability": "AI.CANN.LLMEngine",
+      "phone": "-",
+      "tablet": "-",
+      "2in1": "有"
+    },
+    {
+      "capability": "AI.Agent.AgentKit",
+      "phone": "有",
+      "tablet": "有",
+      "2in1": "-"
+    },
+    {
+      "capability": "DataAugmentation.Retrieval",
+      "phone": "有",
+      "tablet": "有",
+      "2in1": "有"
+    },
+    {
+      "capability": "DataAugmentation.KnowledgeProcessor",
+      "phone": "有",
+      "tablet": "有",
+      "2in1": "有"
+    },
+    {
+      "capability": "AI.OCR.TextRecognition",
+      "phone": "有",
+      "tablet": "有",
+      "2in1": "有"
+    },
+    {
+      "capability": "AI.SpeechRecognizer",
+      "phone": "有",
+      "tablet": "有",
+      "2in1": "有"
+    },
+    {
+      "capability": "AI.TextToSpeech",
+      "phone": "有",
+      "tablet": "有",
+      "2in1": "有"
+    },
+    {
+      "capability": "AI.NaturalLanguage.TextProcessing",
+      "phone": "有",
+      "tablet": "有",
+      "2in1": "有"
+    },
+    {
+      "capability": "AI.Intents.IntentsKit",
+      "phone": "-",
+      "tablet": "-",
+      "2in1": "-"
+    },
+    {
+      "capability": "AI.VisionImageAnalyzer",
+      "phone": "有",
+      "tablet": "有",
+      "2in1": "有"
+    },
+    {
+      "capability": "AI.AICaption",
+      "phone": "有",
+      "tablet": "有",
+      "2in1": "有"
+    }
+  ]
+}
