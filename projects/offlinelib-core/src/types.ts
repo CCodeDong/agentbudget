@@ -132,3 +132,15 @@ export interface BudgetDecision {
   /** 决策理由，直接显示给用户（"为什么只给你 3 条"）。 */
   reason: string;
 }
+
+/**
+ * 持久化存档格式。
+ *
+ * 只存文档，不存倒排索引——理由见 `store.ts` 顶部的 DESIGN DECISION。
+ * `version` 用于将来做格式迁移；目前只支持 1。
+ */
+export interface DocStoreSnapshot {
+  version: number;
+  docs: DocItem[];
+}
+

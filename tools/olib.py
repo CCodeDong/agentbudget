@@ -72,12 +72,24 @@ def test() -> int:
     code = build()
     if code != 0:
         return code
-    entry = DIST / "test" / "core.test.js"
-    if not entry.exists():
-        print(f"[olib] 找不到测试入口：{entry}")
+    test_dir = DIST / "test"
+    if not test_dir.exists():
+        print(f"[olib] 找不到测试目录：{test_dir}")
         return 2
-    print("[olib] 运行单元测试")
-    return run_node([str(entry)], CORE)
+    # 逐个跑，而不是用 `node --test`：--test 会为每个文件 spawn 子进程，
+    # 而当前沙箱禁止管道通信，会以 EPERM 失败。
+    files = sorted(test_dir.glob("*.test.js"))
+    if not files:
+        print(f"[olib] {test_dir} 下没有 *.test.js")
+        return 2
+    worst = 0
+    for f in files:
+        print(f"[olib] 运行 {f.name}")
+        rc = run_node([str(f)], CORE)
+        if rc != 0:
+            worst = rc
+    print(f"[olib] 共 {len(files)} 个测试文件，{'全部通过' if worst == 0 else '有失败'}")
+    return worst
 
 
 def clean() -> int:
