@@ -35,20 +35,35 @@ interface Posting {
 }
 
 export class InvertedIndex {
-  /** 全部块，按加入顺序。 */
+  /** 全部块，按加入顺序。**含已删除的墓碑**，所以不能直接用下标当"第 i 个活块"。 */
   private chunks: Chunk[] = [];
   /** 块 id → 下标。 */
   private chunkPos: Map<string, number> = new Map<string, number>();
   /** 词项 → (块下标 → Posting)。 */
   private postings: Map<string, Map<number, Posting>> = new Map<string, Map<number, Posting>>();
-  /** 每个块的长度（词项数）。 */
+  /** 每个块的长度（词项数）。与 chunks 等长。 */
   private lengths: number[] = [];
-  /** 长度总和，用于 avgdl。 */
-  private totalLength: number = 0;
+  /** 墓碑标记。true 表示该块已删除，检索时跳过。 */
+  private deleted: boolean[] = [];
+  /** 活块的物理下标列表，顺序与加入顺序一致。`getChunk(i)` 用它映射。 */
+  private liveIdx: number[] = [];
+  /** 活块数。 */
+  private liveCount: number = 0;
+  /** 活块的长度总和，用于 avgdl。 */
+  private liveLengthSum: number = 0;
 
-  /** 已索引的块数。 */
+  /**
+   * 墓碑超过这个比例就自动压缩。
+   *
+   * 为什么需要：墓碑让删除变成 O(文档块数) 而不是 O(全库)，
+   * 但死块会一直占着内存与遍历成本。20% 是一个折中——
+   * 压缩本身是 O(全库)，太频繁就失去了增量的意义。
+   */
+  public static readonly COMPACT_THRESHOLD = 0.2;
+
+  /** 已索引的**活块**数。 */
   public size(): number {
-    return this.chunks.length;
+    return this.liveCount;
   }
 
   /** 清空。重新建库时用。 */
@@ -57,7 +72,10 @@ export class InvertedIndex {
     this.chunkPos = new Map<string, number>();
     this.postings = new Map<string, Map<number, Posting>>();
     this.lengths = [];
-    this.totalLength = 0;
+    this.deleted = [];
+    this.liveIdx = [];
+    this.liveCount = 0;
+    this.liveLengthSum = 0;
   }
 
   /** 加入一个块。重复 id 会被忽略（幂等，便于增量建库）。 */
@@ -68,10 +86,13 @@ export class InvertedIndex {
     const idx = this.chunks.length;
     this.chunks.push(c);
     this.chunkPos.set(c.id, idx);
+    this.deleted.push(false);
+    this.liveIdx.push(idx);
 
     const toks = tokenize(c.text);
     this.lengths.push(toks.length);
-    this.totalLength += toks.length;
+    this.liveCount += 1;
+    this.liveLengthSum += toks.length;
 
     // 逐词项累积词频与位置
     for (let i = 0; i < toks.length; i++) {
@@ -92,6 +113,142 @@ export class InvertedIndex {
     return true;
   }
 
+  /**
+   * 删除一份文档的全部块。
+   *
+   * 用**墓碑标记**而不是物理删除：物理删除会让 `chunks` 下标整体前移，
+   * 所有倒排表里记录的块下标立刻全部失效，只能全量重建——
+   * 那正是我们要避免的。墓碑让删除只与**该文档的块数**成正比。
+   *
+   * 返回被标记删除的块数。
+   */
+  public removeDocument(docId: string): number {
+    let removed = 0;
+    for (let i = 0; i < this.liveIdx.length; i++) {
+      const phys = this.liveIdx[i];
+      if (this.chunks[phys].docId !== docId) {
+        continue;
+      }
+      this.deleted[phys] = true;
+      this.liveCount -= 1;
+      this.liveLengthSum -= this.lengths[phys];
+      removed += 1;
+    }
+    if (removed > 0) {
+      this.rebuildLiveIdx();
+      this.maybeCompact();
+    }
+    return removed;
+  }
+
+  /**
+   * 用新文档替换旧文档的同 id 部分。
+   *
+   * 这是"用户重拍一张更清晰的照片"对应的操作：
+   * 旧块墓碑化，新块加入。比"先删再建索引"少一次全量重建。
+   *
+   * 返回新加入的块数。
+   */
+  public replaceDocument(doc: DocItem, opts: ChunkOptions = DEFAULT_CHUNK_OPTIONS): number {
+    this.removeDocument(doc.id);
+    // 清掉该 docId 的**全部**块 id 占位。
+    //
+    // ⚠️ 这里曾经只遍历 liveIdx，结果漏掉了已墓碑化的旧块——
+    //    它们的 id 仍留在 chunkPos 里，于是新块被当成"重复 id"而拒绝加入，
+    //    表现为"替换后搜不到新内容"。
+    //
+    //    为什么早期测试没发现：那些用例是单文档库，删除后墓碑比例 100%
+    //    会触发自动压缩，压缩顺带重建了 chunkPos，把 bug 掩盖了。
+    //    多文档场景（墓碑比例低于阈值、不触发压缩）才暴露出来。
+    for (let i = 0; i < this.chunks.length; i++) {
+      if (this.chunks[i].docId === doc.id) {
+        this.chunkPos.delete(this.chunks[i].id);
+      }
+    }
+    return this.addDocument(doc, opts);
+  }
+
+  /** 活块的物理下标重排。删除后调用。 */
+  private rebuildLiveIdx(): void {
+    const next: number[] = [];
+    for (let i = 0; i < this.chunks.length; i++) {
+      if (!this.deleted[i]) {
+        next.push(i);
+      }
+    }
+    this.liveIdx = next;
+  }
+
+  /** 墓碑比例超阈值时自动压缩。 */
+  private maybeCompact(): void {
+    const total = this.chunks.length;
+    if (total === 0) {
+      return;
+    }
+    const deadRatio = (total - this.liveCount) / total;
+    if (deadRatio >= InvertedIndex.COMPACT_THRESHOLD) {
+      this.compact();
+    }
+  }
+
+  /**
+   * 物理压缩：丢掉墓碑，重建全部倒排表。
+   *
+   * **这是 O(全库) 的操作**，所以只在墓碑比例高时调用——
+   * 频繁调用会让增量删除失去意义。
+   */
+  public compact(): void {
+    const keptChunks: Chunk[] = [];
+    const keptLengths: number[] = [];
+    const remap: Map<number, number> = new Map<number, number>();
+
+    for (let i = 0; i < this.chunks.length; i++) {
+      if (this.deleted[i]) {
+        continue;
+      }
+      remap.set(i, keptChunks.length);
+      keptChunks.push(this.chunks[i]);
+      keptLengths.push(this.lengths[i]);
+    }
+
+    this.chunks = keptChunks;
+    this.lengths = keptLengths;
+    this.deleted = [];
+    for (let i = 0; i < keptChunks.length; i++) {
+      this.deleted.push(false);
+    }
+    this.liveIdx = [];
+    for (let i = 0; i < keptChunks.length; i++) {
+      this.liveIdx.push(i);
+    }
+    this.liveCount = keptChunks.length;
+    this.chunkPos = new Map<string, number>();
+    for (let i = 0; i < keptChunks.length; i++) {
+      this.chunkPos.set(keptChunks[i].id, i);
+    }
+
+    // 重建倒排表：把旧下标重映射到新下标
+    const nextPostings: Map<string, Map<number, Posting>> = new Map<string, Map<number, Posting>>();
+    this.postings.forEach((perChunk: Map<number, Posting>, term: string) => {
+      const remapped: Map<number, Posting> = new Map<number, Posting>();
+      perChunk.forEach((p: Posting, oldIdx: number) => {
+        const ni = remap.get(oldIdx);
+        if (ni !== undefined) {
+          remapped.set(ni, p);
+        }
+      });
+      if (remapped.size > 0) {
+        nextPostings.set(term, remapped);
+      }
+    });
+    this.postings = nextPostings;
+  }
+
+  /** 墓碑数。用于界面上显示"待整理"或调试。 */
+  public tombstoneCount(): number {
+    return this.chunks.length - this.liveCount;
+  }
+
   /** 把一份资料切成块并全部加入。返回新建的块数。 */
   public addDocument(doc: DocItem, opts: ChunkOptions = DEFAULT_CHUNK_OPTIONS): number {
     const chunks = chunkDocument(doc, opts);
@@ -104,21 +261,27 @@ export class InvertedIndex {
     return added;
   }
 
-  /** 平均块长度（词项数）。 */
+  /** 平均块长度（词项数）。只统计活块——墓碑不该影响 avgdl。 */
   public avgDocLength(): number {
-    if (this.lengths.length === 0) {
+    if (this.liveCount === 0) {
       return 0;
     }
-    return this.totalLength / this.lengths.length;
+    return this.liveLengthSum / this.liveCount;
   }
 
-  /** 块数。 */
+  /** 活块数。 */
   public chunkCount(): number {
-    return this.chunks.length;
+    return this.liveCount;
   }
 
+  /**
+   * 取第 i 个**活块**。
+   *
+   * 注意入参是"活块序号"，不是物理下标——真实下标由 `liveIdx` 映射。
+   * 这样调用方（分块遍历、高亮、界面列表）不需要知道墓碑的存在。
+   */
   public getChunk(i: number): Chunk {
-    return this.chunks[i];
+    return this.chunks[this.liveIdx[i]];
   }
 
   /**
@@ -175,6 +338,11 @@ export class InvertedIndex {
 
     const out: Candidate[] = [];
     acc.forEach((score: number, idx: number) => {
+      // 墓碑块必须跳过：它们已从 liveCount / avgdl 里剔除，
+      // 但倒排表里仍留着记录（要等 compact 才清）。
+      if (this.deleted[idx]) {
+        return;
+      }
       const m = matched.get(idx);
       out.push({
         index: idx,

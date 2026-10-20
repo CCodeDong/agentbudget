@@ -285,13 +285,86 @@ export class LibraryService {
     return n;
   }
 
-  /** 删除一份资料，并把它从索引里剔除（重建索引，简单且不会漏）。 */
+  /**
+   * 删除一份资料。
+   *
+   * **不再全量重建索引**：早先这里写的是 `store.remove` + `rebuildIndex()`，
+   * 删除一份文档要把全库重新切词、重新建倒排表。
+   * 1000 份文档时删 10 份就是 10 次全量重建。
+   *
+   * 现在走 `InvertedIndex.removeDocument()` 的墓碑路径，
+   * 代价只与该文档的块数成正比；墓碑累积到阈值时引擎会自动压缩。
+   */
   public removeDocument(id: string): boolean {
     const ok = this.store.remove(id);
     if (ok) {
-      this.rebuildIndex();
+      this.index.removeDocument(id);
     }
     return ok;
+  }
+
+  /**
+   * 替换一份资料（用户重拍了照片、或重新粘贴了文本）。
+   *
+   * 比"先 removeDocument 再 importDocument"少一次全量重建，
+   * 而且能保持文档在列表中的位置。
+   */
+  public async replaceDocument(id: string, input: ImportInput): Promise<ImportOutcome> {
+    const old = this.store.get(id);
+    if (old === undefined) {
+      return { ok: false, verdict: 'reject', docId: '', chunks: 0, message: '要替换的文档不存在' };
+    }
+
+    let text = input.text !== undefined ? input.text : '';
+    let verdict: OcrVerdict = 'accept';
+
+    if (text.length === 0) {
+      if (!this.ocr.available()) {
+        return {
+          ok: false, verdict: 'reject', docId: '', chunks: 0,
+          message: '当前设备没有可用的 OCR 能力，请改用「粘贴文本」导入'
+        };
+      }
+      const res = await this.ocr.recognize(input.uri);
+      verdict = judgeOcr(res, this.ocrPolicy);
+      if (verdict === 'reject') {
+        return {
+          ok: false, verdict: verdict, docId: '', chunks: 0,
+          message: res.error !== undefined ? res.error : '识别质量过低，未替换'
+        };
+      }
+      text = res.text;
+    }
+
+    if (text.length === 0) {
+      return { ok: false, verdict: 'reject', docId: '', chunks: 0, message: '内容为空' };
+    }
+
+    const doc: DocItem = {
+      id: id,
+      title: input.title,
+      source: input.source,
+      uri: input.uri,
+      addedAt: old.addedAt,
+      text: text
+    };
+    this.store.put(doc);
+    const added = this.index.replaceDocument(doc, this.chunkOptionsFor(text.length));
+
+    return {
+      ok: true, verdict: verdict, docId: id, chunks: added,
+      message: verdict === 'retake' ? '已替换，但识别置信度偏低，建议重拍' : '已替换'
+    };
+  }
+
+  /** 墓碑数（死块）。界面可据此提示"索引需要整理"。 */
+  public tombstoneCount(): number {
+    return this.index.tombstoneCount();
+  }
+
+  /** 手动压缩索引。一般不需要——引擎会在墓碑超阈值时自动压缩。 */
+  public compactIndex(): void {
+    this.index.compact();
   }
 
   /** 训练/演示用：列出全部文档。 */

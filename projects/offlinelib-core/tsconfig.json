@@ -12,5 +12,5 @@
     "declaration": false,
     "sourceMap": false
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "types/**/*.d.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts", "types/**/*.d.ts", "bench/**/*.ts"]
 }

@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 """
-离线资料库核心（offlinelib-core）的构建与测试入口。
+离线资料库核心（offlinelib-core）的构建、测试与基准入口。
 
 WHY THIS SCRIPT
     这个工程刻意**零 npm 依赖** —— 不装 jest、不装 @types/node。
     但它需要一个 TypeScript 编译器，而当前环境没有全局 tsc。
     所以这个脚本负责**找到 DevEco Studio 自带的 tsc** 并调用它。
 
-    这样别人克隆仓库后**只需要装 Node（>=22）**，不需要 npm install，
+    这样别人克隆仓库后**只需要装 Node（>= 20）**，不需要 npm install，
     一条命令就能复现全部测试。这直接对应老师那条批评——
     "检索技术路线无法核实"的解法是**别人能一条命令跑出来**。
 
 USAGE
     python tools/olib.py test        # 编译 + 跑全部单元测试
     python tools/olib.py build       # 只编译
+    python tools/olib.py bench       # 编译 + 跑微基准
     python tools/olib.py clean       # 清掉 dist/
-    python tools/olib.py dev         # 编译并跑测试，失败时以非零码退出
+    python tools/olib.py dev         # 同 test（别名）
 """
 
 import argparse
@@ -37,7 +38,7 @@ TSC_CANDIDATES = [
 ]
 
 
-def find_tsc() -> Path | None:
+def find_tsc():
     for p in TSC_CANDIDATES:
         if p.exists():
             return p
@@ -55,7 +56,7 @@ def run_node(args, cwd):
     return subprocess.run(["node", *args], cwd=str(cwd)).returncode
 
 
-def build() -> int:
+def build():
     tsc = find_tsc()
     if tsc is None:
         print("[olib] 找不到 TypeScript 编译器。")
@@ -68,7 +69,7 @@ def build() -> int:
     return code
 
 
-def test() -> int:
+def test():
     code = build()
     if code != 0:
         return code
@@ -88,11 +89,27 @@ def test() -> int:
         rc = run_node([str(f)], CORE)
         if rc != 0:
             worst = rc
-    print(f"[olib] 共 {len(files)} 个测试文件，{'全部通过' if worst == 0 else '有失败'}")
+    print(f"[olib] 共 {len(files)} 个测试文件，"
+          f"{'全部通过' if worst == 0 else '有失败'}")
     return worst
 
 
-def clean() -> int:
+def bench():
+    """跑微基准。
+
+    数值只用于比较两种实现的相对差距，**不代表手机上的性能**。
+    """
+    code = build()
+    if code != 0:
+        return code
+    entry = DIST / "bench" / "bench.js"
+    if not entry.exists():
+        print(f"[olib] 找不到基准入口：{entry}")
+        return 2
+    return run_node([str(entry)], CORE)
+
+
+def clean():
     if DIST.exists():
         shutil.rmtree(DIST)
         print(f"[olib] 已删除 {DIST}")
@@ -101,18 +118,19 @@ def clean() -> int:
     return 0
 
 
-def main() -> int:
+def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("cmd", nargs="?", default="test",
-                    choices=["test", "build", "clean", "dev"])
+                    choices=["test", "build", "clean", "dev", "bench"])
     args = ap.parse_args()
 
     if not CORE.exists():
         print(f"[olib] 工程不存在：{CORE}")
         return 2
 
-    return {"test": test, "dev": test, "build": build, "clean": clean}[args.cmd]()
+    handlers = {"test": test, "dev": test, "build": build, "clean": clean, "bench": bench}
+    return handlers[args.cmd]()
 
 
 if __name__ == "__main__":
