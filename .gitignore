@@ -102,3 +102,4 @@ app/offlinelib/_hvhome/
 app/offlinelib/_npmcache/
 app/offlinelib/build/
 app/offlinelib/**/build/
+app/offlinelib/_out/
