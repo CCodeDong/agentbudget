@@ -1,0 +1,20 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "On-device multi-agent orchestration module"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "Multi-agent orchestration with budget scheduling"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "Edge Agents"
+    },
+    {
+      "name": "reason_network_info",
+      "value": "Read connectivity state to choose between on-device, edge and cloud execution"
+    }
+  ]
+}

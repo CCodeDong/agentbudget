@@ -96,3 +96,9 @@ stdx/
 
 # 编译产物（可由 python tools/olib.py build 重建）
 projects/offlinelib-core/dist/
+
+# 离线资料库工程的构建缓存
+app/offlinelib/_hvhome/
+app/offlinelib/_npmcache/
+app/offlinelib/build/
+app/offlinelib/**/build/
