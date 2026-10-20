@@ -1,0 +1,10 @@
+﻿{
+  "name": "offlinelib-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "离线资料库核心：切词 / 倒排索引 / BM25 / 自适应 top-k",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "tsc -p tsconfig.json && node dist/test/core.test.js"
+  }
+}
