@@ -15,6 +15,7 @@ USAGE
     python tools/olib.py test        # 编译 + 跑全部单元测试
     python tools/olib.py build       # 只编译
     python tools/olib.py bench       # 编译 + 跑微基准
+    python tools/olib.py eval        # 真实语料检索评估
     python tools/olib.py clean       # 清掉 dist/
     python tools/olib.py dev         # 同 test（别名）
 """
@@ -109,6 +110,23 @@ def bench():
     return run_node([str(entry)], CORE)
 
 
+def eval_corpus():
+    """用仓库自己的 markdown 文档做真实语料，评估检索质量。
+
+    这一步回答的是老师那条批评："全文检索技术路线无法核实"——
+    核实的标准不是"代码能跑"，而是"在真实资料上检索得准"。
+    """
+    code = build()
+    if code != 0:
+        return code
+    entry = DIST / "eval" / "corpus_eval.js"
+    if not entry.exists():
+        print(f"[olib] 找不到评估入口：{entry}")
+        return 2
+    print("[olib] 语料 = 仓库根目录下的 markdown 文档")
+    return run_node([str(entry), str(ROOT)], CORE)
+
+
 def clean():
     if DIST.exists():
         shutil.rmtree(DIST)
@@ -122,14 +140,14 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("cmd", nargs="?", default="test",
-                    choices=["test", "build", "clean", "dev", "bench"])
+                    choices=["test", "build", "clean", "dev", "bench", "eval"])
     args = ap.parse_args()
 
     if not CORE.exists():
         print(f"[olib] 工程不存在：{CORE}")
         return 2
 
-    handlers = {"test": test, "dev": test, "build": build, "clean": clean, "bench": bench}
+    handlers = {"test": test, "dev": test, "build": build, "clean": clean, "bench": bench, "eval": eval_corpus}
     return handlers[args.cmd]()
 
 
