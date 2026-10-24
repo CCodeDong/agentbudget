@@ -30,7 +30,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CORE = ROOT / "projects" / "offlinelib-core"
 DIST = CORE / "dist"
 
-# 按优先级找 tsc：项目内 → DevEco 的几处 → PATH
+# 按优先级找 tsc：项目内 -> DevEco 的几处 -> PATH
 TSC_CANDIDATES = [
     CORE / "node_modules" / "typescript" / "bin" / "tsc",
     Path(r"D:\develop\DevEco Studio\tools\hvigor\hvigor-ohos-plugin\node_modules\typescript\bin\tsc"),

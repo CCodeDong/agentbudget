@@ -176,7 +176,7 @@ def cmd_install():
         return 2
     if "unsigned" in h.name:
         print("[device] 警告：只找到 unsigned 的包，很可能装不上。")
-        print("          DevEco → File → Project Structure → Signing Configs 开启自动签名后重新构建。")
+        print("          DevEco -> File -> Project Structure -> Signing Configs 开启自动签名后重新构建。")
     print(f"[device] 安装 {h.name}（{h.stat().st_size:,} B）")
     code, out = hdc("install", "-r", str(h), timeout=300)
     print("  " + out.strip().replace("\n", "\n  "))

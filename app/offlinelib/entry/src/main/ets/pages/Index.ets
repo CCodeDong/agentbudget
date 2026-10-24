@@ -24,8 +24,9 @@ import { RealOcrEngine } from '../lib/realocr';
 import { OcrResult } from '../lib/ocr';
 
 const BUDGET: BudgetInput = { latencyBudgetMs: 500, memoryBudgetKb: 4096, batteryPercent: 80 };
-const OPTS_FIXED: SearchOptions = { topK: 3, minK: 1, maxK: 20 };
-const OPTS_AUTO: SearchOptions = { topK: 0, minK: 1, maxK: 20 };
+// mergeAdjacent：把同一文档里相接的命中块合并成一条，避免同一段话返回多次。
+const OPTS_FIXED: SearchOptions = { topK: 3, minK: 1, maxK: 20, mergeAdjacent: true };
+const OPTS_AUTO: SearchOptions = { topK: 0, minK: 1, maxK: 20, mergeAdjacent: true };
 
 @Entry
 @Component

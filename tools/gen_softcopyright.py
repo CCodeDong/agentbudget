@@ -13,7 +13,7 @@ WHY A GENERATOR INSTEAD OF HAND-MADE DOCX
 
 TWO DOCUMENTS
     1. 源代码文档  —— 前 30 页 + 后 30 页，不足 60 页则提交全部
-       我们的唯一源码是 2,344 行（去空行）≈ 47 页 < 60 页 → 提交全部
+       我们的唯一源码是 2,344 行（去空行）≈ 47 页 < 60 页 -> 提交全部
 
     2. 软件说明书  —— 有结构的说明文档，不是截图堆砌
 
@@ -98,7 +98,7 @@ def check_sync() -> bool:
             print(f"       {pb}")
     print()
     if not ok:
-        print("  ⚠️ 副本与核心不一致 —— 登记的将不是实际运行的代码。")
+        print("  [!] 副本与核心不一致 —— 登记的将不是实际运行的代码。")
         print("     先同步：把 projects/offlinelib-core/src/*.ts 复制到 ets/lib/")
     else:
         print("  全部一致，可以生成文档。")
@@ -141,7 +141,7 @@ def wrap_line(line: str) -> list:
 def build_source_lines() -> list:
     """拼出完整源代码行序列，含文件分隔注释。
 
-    ⚠️ 刻意**不插入空行**。
+    [!] 刻意**不插入空行**。
        软著要求源代码文档"不含空行"，而且空行会让人怀疑是在凑页数。
        文件之间的分隔由 4 行注释块承担，视觉上已经足够清楚。
        源码里的空行也已在 read_lines() 里去掉了。
@@ -207,9 +207,9 @@ def gen_source():
     print(f"  每页行数 : {LINES_PER_PAGE}")
     print(f"  总页数   : {pages}")
     if pages <= 60:
-        print("  规则     : 不足 60 页 → **提交全部源代码**")
+        print("  规则     : 不足 60 页 -> **提交全部源代码**")
     else:
-        print("  规则     : 超过 60 页 → 提交前 30 页 + 后 30 页")
+        print("  规则     : 超过 60 页 -> 提交前 30 页 + 后 30 页")
 
     doc = Document()
     sec = doc.sections[0]

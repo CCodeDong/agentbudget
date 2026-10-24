@@ -229,8 +229,8 @@ codec: codec|<form>|<from>|<to>|<intent>|<payload...>
            ["clipboard.read", "the×2 +6", "6"],
            ["contact.lookup（正确）", "contact +3", "3（落选）"]],
           caption="表 2  停用词重复计数导致的误选")
-    para(doc, "修复方式为：小写化 → 停用词过滤 → 去重。该修正恢复了压缩臂三分之二的"
-              "准确率损失（0.900 → 0.967），而仅增加 3% 的 token 开销。")
+    para(doc, "修复方式为：小写化 -> 停用词过滤 -> 去重。该修正恢复了压缩臂三分之二的"
+              "准确率损失（0.900 -> 0.967），而仅增加 3% 的 token 开销。")
 
     h(doc, "五、测试与验证", 1)
     h(doc, "5.1 单元测试", 2)
@@ -392,7 +392,7 @@ def build_cangjie_deck():
                    ("移动端小模型上下文窗口通常只有 4k–8k", 1),
                    ("工具 schema 以每轮全量注入方式进入上下文，从业者报告 10k–60k token/轮", 1),
                    "现有工作各自只优化一个侧面：路由 / 工具注入 / 通信压缩",
-                   "→ 空白：从未在同一预算约束下联合决策"],
+                   "-> 空白：从未在同一预算约束下联合决策"],
                   notes="强调矛盾的结构性：不是工程没做好，而是两个数字对不上。")
     slide_section(prs, "一、系统设计")
     slide_bullets(prs, "架构：编排在设备，推理在边缘与云",
@@ -400,7 +400,7 @@ def build_cangjie_deck():
                    "P2 仓颉库 agentbudget4cj —— 决策层（本课题主体）",
                    ("budget / tool / codec / router / scheduler 五个模块", 1),
                    "P3 实验与测量层 —— 任务集、验证器、指标采集",
-                   "三层放置：设备本地 → 局域网边缘 → 云端"],
+                   "三层放置：设备本地 -> 局域网边缘 -> 云端"],
                   notes="本项目应用侧与库侧收敛到同一个研究点，库是可独立复用的三方件。")
     slide_code(prs, "决策阶梯：按实测成本结构排序",
                """
@@ -434,13 +434,13 @@ else:                                      on-device
 查询: "search my contact list for the person from the vendor"
                                     ↑ the 出现两次
 
-web.search        search+3, the×2+6  →  9
-weather.query          the×2+6       →  6
-clipboard.read         the×2+6       →  6
-contact.lookup(正确)   contact+3     →  3   ← 落选
+web.search        search+3, the×2+6  ->  9
+weather.query          the×2+6       ->  6
+clipboard.read         the×2+6       ->  6
+contact.lookup(正确)   contact+3     ->  3   <- 落选
 
-修复：小写化 → 停用词过滤 → 去重
-效果：压缩臂成功率 0.900 → 0.967，仅 +3% token
+修复：小写化 -> 停用词过滤 -> 去重
+效果：压缩臂成功率 0.900 -> 0.967，仅 +3% token
 """,
                notes="这是本课题最重要的实现发现。一个虚词的重复出现解释了压缩臂"
                      "全部的准确率损失。它也说明一个方法论：在把损失归因于压缩之前，"
@@ -549,7 +549,7 @@ def build_mobile_report():
 ┌──────────────────────────────────────────────────────┐
 │ HarmonyOS 应用（ArkTS / Stage 模型）                  │
 │  编排层    A2A Server（createA2AServer / Server）     │
-│  智能体    Planner → Executor → Verifier              │
+│  智能体    Planner -> Executor -> Verifier              │
 │  决策层    调用仓颉库 agentbudget4cj                  │
 │  能力层    15 个设备能力工具                          │
 │  感知层    DataAugmentation.Retrieval（端侧记忆）     │
@@ -567,7 +567,7 @@ def build_mobile_report():
            ["core/BudgetPolicy.ets", "联合决策阶梯（明确标注为仓颉库的忠实移植）"],
            ["core/NetworkProbe.ets", "网络状态探测，失败时降级到保守状态"],
            ["agents/ToolRegistry.ets", "15 个工具 + 归一化词法检索（含停用词去重）"],
-           ["agents/AgentRuntime.ets", "Planner→Executor→Verifier 三智能体循环"],
+           ["agents/AgentRuntime.ets", "Planner->Executor->Verifier 三智能体循环"],
            ["pages/Index.ets", "编排控制台 UI，可视化决策与执行轨迹"]],
           caption="表 2  ArkTS 模块划分")
     para(doc, "在 BudgetPolicy.ets 的文件头明确声明：本文件不是方法的权威实现，"
@@ -695,7 +695,7 @@ def build_mobile_deck():
                    "多智能体 token 消耗约为普通对话的 15 倍",
                    ("而手机端上下文窗口只有 4k–8k", 1),
                    "移动端不是「差一点」，而是差一个数量级",
-                   "→ 需要把「上下文预算」变成运行时的一等公民"],
+                   "-> 需要把「上下文预算」变成运行时的一等公民"],
                   notes="把矛盾讲清楚：两个数字对不上，这不是工程问题而是设计问题。")
     slide_section(prs, "一、立项核验")
     slide_bullets(prs, "动手前先核验平台能力边界",
@@ -705,16 +705,16 @@ def build_mobile_deck():
                    "结论二：但手机能承载多智能体编排",
                    ("AI.Agent.AgentKit 在 phone-hmos.json 中，且不在 api-white-list", 1),
                    ("A2A / Agent Framework 不需要任何 ohos.permission", 1),
-                   "→ 架构定位：编排在设备，推理在边缘 / 云端"],
+                   "-> 架构定位：编排在设备，推理在边缘 / 云端"],
                   notes="这页是本课题最有价值的部分之一：我们没有假设，而是去 SDK "
                         "声明文件里把能力边界查清楚了，避免了整条路线走错。")
     slide_code(prs, "核验方法：用 SDK 的设备能力矩阵",
                """
 # phone 与 2in1 的能力差异
-phone-hmos.json  → AI.Agent.AgentKit, AI.InsightIntent, AI.HiAIFoundation
+phone-hmos.json  -> AI.Agent.AgentKit, AI.InsightIntent, AI.HiAIFoundation
                    没有 AI.CANN.LLMEngine / LocalChatModel / RAG
 
-2in1-hmos.json   → 上述三项全部具备
+2in1-hmos.json   -> 上述三项全部具备
 
 # 逐 API 统计 CANNKit.json
 265 个 deviceTypes 块，其中 37 个是 2in1-only
@@ -725,7 +725,7 @@ syscap = SystemCapability.AI.CANN.LLMEngine
     slide_section(prs, "二、系统实现")
     slide_bullets(prs, "应用架构",
                   ["编排层：A2A Server（createA2AServer / Server）",
-                   "智能体：Planner → Executor → Verifier",
+                   "智能体：Planner -> Executor -> Verifier",
                    "决策层：调用仓颉库 agentbudget4cj",
                    "能力层：15 个设备能力工具（日历 / 联系人 / 文件 / 通知 / 网络搜索 + 10 个干扰项）",
                    "感知层：DataAugmentation.Retrieval 提供端侧记忆",
@@ -736,10 +736,10 @@ syscap = SystemCapability.AI.CANN.LLMEngine
                         "随池规模增长的是 token 节省。这是实测结论，与直觉相反。")
     slide_bullets(prs, "使用真实的 A2A API",
                   ["Message.parts: Part[] 支持 text / raw / url / data 四种通道",
-                   ("→ 自然语言消息是设计选择，不是协议约束", 1),
+                   ("-> 自然语言消息是设计选择，不是协议约束", 1),
                    "Part.metadata / Message.metadata 携带预算遥测，不污染模型载荷",
                    "Task.history 整份携带，每轮约 +133 字节",
-                   ("→ 这就是上下文增长问题在协议层的对应物", 1)],
+                   ("-> 这就是上下文增长问题在协议层的对应物", 1)],
                   notes="第三点是本页最有价值的设计洞察：协议本身给了结构化与遥测的通道，"
                         "用不用是设计决策。")
     slide_section(prs, "三、构建与验证")
@@ -748,7 +748,7 @@ syscap = SystemCapability.AI.CANN.LLMEngine
                 [["构建命令", "hvigorw assembleHap（DevEco 自带工具链）"],
                  ["构建结果", "BUILD SUCCESSFUL"],
                  ["产物", "entry-default-unsigned.hap 221,866 字节"],
-                 ["模板骨架对比", "110,146 字节 → 确认包含本项目代码"],
+                 ["模板骨架对比", "110,146 字节 -> 确认包含本项目代码"],
                  ["编译错误", "0"]],
                 notes="产物大小的对比是一个简单但有力的证据：如果我什么都没写，"
                       "它应该还是 110KB。")
@@ -773,9 +773,9 @@ syscap = SystemCapability.AI.CANN.LLMEngine
     slide_bullets(prs, "演示：把研究结论做成可交互的失败",
                   ["界面显示：在哪一层执行 / 工具上下文如何渲染 / 消息形式 / 理由",
                    "执行轨迹证明验证器确实收到了参数",
-                   "把预算滑块推过 30% 且网络设为弱网 → 验证器报告 FAIL",
+                   "把预算滑块推过 30% 且网络设为弱网 -> 验证器报告 FAIL",
                    ("原因：summary 形式截断了工具参数，JSON 的收尾括号被切掉", 1),
-                   "→ 演示本身成为论据的一部分"],
+                   "-> 演示本身成为论据的一部分"],
                   notes="这是我最想展示的一点：演示不只是展示成功路径，"
                         "而是把论文里的失败模式做成可复现的现场操作。")
     slide_bullets(prs, "总结与后续工作",

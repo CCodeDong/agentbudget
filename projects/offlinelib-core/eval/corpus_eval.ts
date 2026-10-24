@@ -165,7 +165,9 @@ function makeQueries(index: InvertedIndex, chunks: Chunk[], sample: number, seed
     const q: Query = {
       text: picked.join(' '),
       goldDocId: c.docId,
-      goldChunkId: c.id
+      goldChunkId: c.id,
+      goldStart: c.start,
+      goldEnd: c.end
     };
     out.push(q);
   }
@@ -176,6 +178,9 @@ interface Query {
   text: string;
   goldDocId: string;
   goldChunkId: string;
+  /** 正确块的原文区间。合并后块 id 会变，所以"是否命中正确块"必须按区间判断。 */
+  goldStart: number;
+  goldEnd: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -194,6 +199,14 @@ interface Metrics {
   avgReturned: number;
   /** 完全命中正确块的比例。 */
   chunkHit: number;
+  /**
+   * 出现「同一文档被返回多条」的查询数。
+   *
+   * 这是衡量合并价值的**不掺水**指标。
+   * 不用精确率来比：合并会让返回条数变少，精确率会凭空变高，
+   * 那只是分母变小，不能说明合并有用。
+   */
+  dupQueries: number;
 }
 
 function evaluate(index: InvertedIndex, queries: Query[], opts: SearchOptions, name: string): Metrics {
@@ -202,6 +215,7 @@ function evaluate(index: InvertedIndex, queries: Query[], opts: SearchOptions, n
   let precisionSum = 0;
   let returnedSum = 0;
   let chunkHits = 0;
+  let dupQueries = 0;
 
   for (let i = 0; i < queries.length; i++) {
     const q = queries[i];
@@ -219,7 +233,13 @@ function evaluate(index: InvertedIndex, queries: Query[], opts: SearchOptions, n
           rank = j;
         }
       }
-      if (h.chunk.id === q.goldChunkId && chunkRank < 0) {
+      // 「是否命中正确块」按**区间覆盖**判断，不按 id 相等。
+      // 原因：合并后的块 id 变成了 doc#0-1 这种形式，id 相等必然失败，
+      // 那会让合并策略在这个指标上凭空变差 —— 是量错了，不是质量下降。
+      const covers = h.chunk.docId === q.goldDocId
+        && h.chunk.start <= q.goldStart
+        && h.chunk.end >= q.goldEnd;
+      if (covers && chunkRank < 0) {
         chunkRank = j;
       }
     }
@@ -233,6 +253,9 @@ function evaluate(index: InvertedIndex, queries: Query[], opts: SearchOptions, n
     if (r.hits.length > 0) {
       precisionSum += relevant / r.hits.length;
     }
+    if (relevant >= 2) {
+      dupQueries += 1;
+    }
   }
 
   const n = Math.max(queries.length, 1);
@@ -242,7 +265,8 @@ function evaluate(index: InvertedIndex, queries: Query[], opts: SearchOptions, n
     mrr: mrrSum / n,
     precision: (precisionSum / n) * 100,
     avgReturned: returnedSum / n,
-    chunkHit: (chunkHits / n) * 100
+    chunkHit: (chunkHits / n) * 100,
+    dupQueries: dupQueries
   };
 }
 
@@ -294,14 +318,17 @@ function main(): void {
   }
   const auto: SearchOptions = { topK: 0, minK: 1, maxK: 10 };
   results.push(evaluate(index, queries, auto, '自适应（得分分布）'));
+  const autoMerge: SearchOptions = { topK: 0, minK: 1, maxK: 10, mergeAdjacent: true };
+  results.push(evaluate(index, queries, autoMerge, '自适应 + 合并相邻块'));
 
-  console.log('策略                       召回率    MRR    精确率   平均返回   精确块命中');
-  console.log('-'.repeat(80));
+  console.log('策略                       召回率    MRR    精确率   平均返回   精确块命中  同文档重复查询');
+  console.log('-'.repeat(84));
   for (let i = 0; i < results.length; i++) {
     const r = results[i];
     console.log(
       `${r.name.padEnd(24)} ${pct(r.recall).padStart(7)} ${r.mrr.toFixed(3).padStart(7)} ` +
-      `${pct(r.precision).padStart(8)} ${r.avgReturned.toFixed(1).padStart(9)} ${pct(r.chunkHit).padStart(10)}`
+      `${pct(r.precision).padStart(8)} ${r.avgReturned.toFixed(1).padStart(9)} ` +
+      `${pct(r.chunkHit).padStart(11)} ${r.dupQueries.toString().padStart(13)}`
     );
   }
 

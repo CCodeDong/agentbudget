@@ -18,7 +18,7 @@
 
 import { InvertedIndex, Candidate, locateSpans } from './index';
 import {
-  Hit, ScoreDiagnostics, SearchOptions, SearchResult, BudgetInput, BudgetDecision
+  Hit, Span, Chunk, ScoreDiagnostics, SearchOptions, SearchResult, BudgetInput, BudgetDecision
 } from './types';
 
 /** 相对落差的下限：小于这个值的"断层"不算断层（避免把噪声当信号）。 */
@@ -116,10 +116,140 @@ export function decideKByScoreGap(
 }
 
 /**
+ * 把同一文档中**重叠或首尾相接**的命中块合并成一条。
+ *
+ * WHY THIS EXISTS
+ *   分块有 40 字符重叠，所以一段连续文字里的关键词很容易同时命中相邻的几块。
+ *   对用户来说那就是"同一段话"，显示成 3 条是纯噪音。
+ *
+ * HOW IT MERGES
+ *   · 文本：直接按偏移拼回去。chunkDocument 的 text 是 text.substring(start, end)，
+ *     所以当后块起点落在前块范围内时，只需补上超出部分。
+ *   · 得分：取**最高分**，不累加。累加会让"被切成很多块的长文档"凭空得高分，
+ *     那是把分块策略的副作用当成相关度。
+ *   · 高亮：后块的 span 需要减去前块起点，换算到合并后的坐标系。
+ *   · 命中词频：相加，因为合并区域里确实出现了那么多次。
+ *
+ *   **不合并不同文档**：跨文档拼在一起没有意义，用户也不会那样读。
+ *
+ * ⚠️ 只在 ranges 真正相接或重叠时合并。中间有空隙就不合并 ——
+ *    否则会把"第 1 段和第 20 段"合成一条，看起来像连续引用，实际不是。
+ */
+export function mergeAdjacentHits(hits: Hit[]): Hit[] {
+  if (hits.length <= 1) {
+    return hits;
+  }
+
+  // 记录每条属于哪个合并组，以及组内成员的原始名次（用于保持排序）
+  const groups: Hit[] = [];
+  const groupRank: number[] = [];
+
+  for (let i = 0; i < hits.length; i++) {
+    const h = hits[i];
+    let target = -1;
+
+    // 找同一文档且范围相接/重叠的已有组
+    for (let g = 0; g < groups.length; g++) {
+      const cur = groups[g];
+      if (cur.chunk.docId !== h.chunk.docId) {
+        continue;
+      }
+      if (h.chunk.start <= cur.chunk.end && cur.chunk.start <= h.chunk.end) {
+        target = g;
+        break;
+      }
+    }
+
+    if (target < 0) {
+      const copy: Hit = {
+        chunk: h.chunk,
+        score: h.score,
+        matched: new Map<string, number>(h.matched),
+        spans: h.spans.slice()
+      };
+      if (h.mergedCount !== undefined) {
+        copy.mergedCount = h.mergedCount;
+      }
+      groups.push(copy);
+      groupRank.push(i);
+      continue;
+    }
+
+    const g0 = groups[target];
+    const base = g0.chunk;
+    const add = h.chunk;
+
+    // 拼文本：add 覆盖 [add.start, add.end)，base 已覆盖 [base.start, base.end)
+    const baseLen = base.text.length;
+    const baseEnd = base.start + baseLen;
+    const tailFrom = baseEnd - add.start;
+    let newText = base.text;
+    if (tailFrom >= 0 && tailFrom < add.text.length) {
+      newText = base.text + add.text.substring(tailFrom);
+    } else if (tailFrom < 0) {
+      // 中间有空隙：不合并，另起一组（正常不会走到，这里防御）
+      groups.push({
+        chunk: add, score: h.score,
+        matched: new Map<string, number>(h.matched), spans: h.spans.slice()
+      });
+      groupRank.push(i);
+      continue;
+    }
+
+    // 高亮坐标换算
+    const shift = add.start - base.start;
+    const spans = g0.spans.slice();
+    for (let s = 0; s < h.spans.length; s++) {
+      const nv: Span = { start: h.spans[s].start + shift, end: h.spans[s].end + shift };
+      spans.push(nv);
+    }
+    spans.sort((a: Span, b: Span) => a.start - b.start);
+
+    // 词频相加
+    const matched = g0.matched;
+    h.matched.forEach((tf: number, term: string) => {
+      matched.set(term, (matched.get(term) ?? 0) + tf);
+    });
+
+    const mergedChunk: Chunk = {
+      id: base.docId + '#' + base.seq.toString() + '-' + add.seq.toString(),
+      docId: base.docId,
+      seq: base.seq,
+      start: base.start,
+      end: Math.max(baseEnd, add.end),
+      text: newText
+    };
+
+    const merged: Hit = {
+      chunk: mergedChunk,
+      score: Math.max(g0.score, h.score),
+      matched: matched,
+      spans: spans,
+      mergedCount: (g0.mergedCount ?? 1) + (h.mergedCount ?? 1)
+    };
+    groups[target] = merged;
+  }
+
+  // 按各组里最好的原始名次排序，保持与合并前一致的顺序
+  const order: number[] = [];
+  for (let i = 0; i < groups.length; i++) {
+    order.push(i);
+  }
+  order.sort((a: number, b: number) => groupRank[a] - groupRank[b]);
+
+  const out: Hit[] = [];
+  for (let i = 0; i < order.length; i++) {
+    out.push(groups[order[i]]);
+  }
+  return out;
+}
+
+/**
  * 检索主入口。
  *
  * `options.topK > 0` → 固定 k（对照组）
  * `options.topK <= 0` → 由得分分布自适应（我们的方法）
+ * `options.mergeAdjacent` → 选出 top-k 之后，把同文档相接的块合并
  */
 export function search(index: InvertedIndex, query: string, options: SearchOptions): SearchResult {
   const candidates = index.score(query);
@@ -149,6 +279,9 @@ export function search(index: InvertedIndex, query: string, options: SearchOptio
     });
   }
 
+  if (options.mergeAdjacent === true) {
+    return { hits: mergeAdjacentHits(hits), k: k, kSource: kSource, diagnostics: diag };
+  }
   return { hits: hits, k: k, kSource: kSource, diagnostics: diag };
 }
 
