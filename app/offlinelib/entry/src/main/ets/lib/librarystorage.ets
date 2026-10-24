@@ -70,7 +70,7 @@ export function readText(ctx: common.UIAbilityContext, name: string): string {
   try {
     const p = ctx.filesDir + '/' + name;
     f = fileIo.openSync(p, fileIo.OpenMode.READ_ONLY);
-    const stat = fileIo.statSync(f.fd);
+    const stat: fileIo.Stat = fileIo.statSync(f.fd);
     if (stat.size <= 0) {
       return '';
     }
@@ -79,33 +79,8 @@ export function readText(ctx: common.UIAbilityContext, name: string): string {
     if (n <= 0) {
       return '';
     }
-    const view: Uint8Array = new Uint8Array(buf, 0, n);
-    // 存档是我们自己写的 UTF-8，逐字节 decode 比依赖 TextDecoder 更稳
-    let out = '';
-    let i = 0;
-    while (i < view.length) {
-      const b0 = view[i];
-      if (b0 < 0x80) {
-        out += String.fromCharCode(b0);
-        i += 1;
-      } else if (b0 >= 0xF0 && i + 3 < view.length) {
-        const cp = ((b0 & 0x07) << 18) | ((view[i + 1] & 0x3F) << 12)
-          | ((view[i + 2] & 0x3F) << 6) | (view[i + 3] & 0x3F);
-        out += String.fromCodePoint(cp);
-        i += 4;
-      } else if (b0 >= 0xE0 && i + 2 < view.length) {
-        const cp = ((b0 & 0x0F) << 12) | ((view[i + 1] & 0x3F) << 6) | (view[i + 2] & 0x3F);
-        out += String.fromCharCode(cp);
-        i += 3;
-      } else if (b0 >= 0xC0 && i + 1 < view.length) {
-        const cp = ((b0 & 0x1F) << 6) | (view[i + 1] & 0x3F);
-        out += String.fromCharCode(cp);
-        i += 2;
-      } else {
-        i += 1;
-      }
-    }
-    return out;
+    return decodeUtf8(new Uint8Array(buf, 0, n));
+
   } catch (e) {
     return '';
   } finally {
@@ -126,4 +101,75 @@ export function hasArchive(ctx: common.UIAbilityContext): boolean {
   } catch (e) {
     return false;
   }
+}
+
+/**
+ * 按 URI 读一个文本文件（用于系统文件选择器返回的 txt / md）。
+ *
+ * 与 readText 的区别：readText 只读我们自己沙箱里的固定文件，
+ * 这里要读用户通过选择器挑的任意位置的文件。
+ * 两者共用同一套 UTF-8 解码逻辑。
+ */
+export function readTextByUri(uri: string): string {
+  let f: fileIo.File | undefined = undefined;
+  try {
+    f = fileIo.openSync(uri, fileIo.OpenMode.READ_ONLY);
+    const stat: fileIo.Stat = fileIo.statSync(f.fd);
+    // 单文件上限 4MB：超过的不导入，避免一次读进内存把应用撑住
+    const MAX = 4 * 1024 * 1024;
+    if (stat.size <= 0 || stat.size > MAX) {
+      return '';
+    }
+    const buf: ArrayBuffer = new ArrayBuffer(stat.size);
+    const n = fileIo.readSync(f.fd, buf);
+    if (n <= 0) {
+      return '';
+    }
+    return decodeUtf8(new Uint8Array(buf, 0, n));
+  } catch (e) {
+    return '';
+  } finally {
+    if (f !== undefined) {
+      try {
+        fileIo.closeSync(f);
+      } catch (e) {
+        // 忽略
+      }
+    }
+  }
+}
+
+/**
+ * UTF-8 解码。
+ *
+ * 为什么自己写而不依赖 TextDecoder：
+ *   这个解码器只处理"合法 UTF-8"，遇到坏字节就跳过，
+ *   不会抛异常打断整个导入流程。对用户从别处拷来的文本文件更稳。
+ */
+function decodeUtf8(view: Uint8Array): string {
+  let out = '';
+  let i = 0;
+  while (i < view.length) {
+    const b0 = view[i];
+    if (b0 < 0x80) {
+      out += String.fromCharCode(b0);
+      i += 1;
+    } else if (b0 >= 0xF0 && i + 3 < view.length) {
+      const cp = ((b0 & 0x07) << 18) | ((view[i + 1] & 0x3F) << 12)
+        | ((view[i + 2] & 0x3F) << 6) | (view[i + 3] & 0x3F);
+      out += String.fromCodePoint(cp);
+      i += 4;
+    } else if (b0 >= 0xE0 && i + 2 < view.length) {
+      const cp = ((b0 & 0x0F) << 12) | ((view[i + 1] & 0x3F) << 6) | (view[i + 2] & 0x3F);
+      out += String.fromCharCode(cp);
+      i += 3;
+    } else if (b0 >= 0xC0 && i + 1 < view.length) {
+      const cp = ((b0 & 0x1F) << 6) | (view[i + 1] & 0x3F);
+      out += String.fromCharCode(cp);
+      i += 2;
+    } else {
+      i += 1;
+    }
+  }
+  return out;
 }

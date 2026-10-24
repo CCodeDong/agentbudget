@@ -15,12 +15,13 @@
 import { LibraryService } from '../lib/pipeline';
 import { FakeOcrEngine } from '../lib/ocr';
 import { DocItem, Hit, Span, BudgetInput, SearchOptions, DocSource } from '../lib/types';
-import { QueryOutcome, ImportOutcome } from '../lib/pipeline';
+import { QueryOutcome, ImportOutcome, ImportInput } from '../lib/pipeline';
 import { runSelfChecks, CheckSummary, CheckResult } from '../selfcheck/SelfCheck';
 import { probeCapabilities, CapabilityProbe } from '../selfcheck/Capability';
 import { common } from '@kit.AbilityKit';
-import { readText, writeText, hasArchive } from '../lib/librarystorage';
+import { readText, writeText, hasArchive, readTextByUri } from '../lib/librarystorage';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
+import { picker } from '@kit.CoreFileKit';
 import { RealOcrEngine } from '../lib/realocr';
 import { OcrResult } from '../lib/ocr';
 import { runQualityTest, QualityRow, QUALITY_CASES } from '../selfcheck/OcrQuality';
@@ -69,6 +70,32 @@ struct Index {
   @State qualityStatus: string = '未运行';
   /** 持久化状态，显示在「资料」页顶部，让用户知道这次是不是真的存下来了。 */
   @State persistStatus: string = '';
+
+  // ---- 详情与编辑 ----
+  /** 是否打开详情页。打开时主界面被替换掉，返回即关闭。 */
+  @State detailOpen: boolean = false;
+  @State detailId: string = '';
+  @State detailTitle: string = '';
+  @State detailText: string = '';
+  @State detailEditing: boolean = false;
+  @State detailStatus: string = '';
+
+  // ---- 删除确认 ----
+  /**
+   * 待确认删除的文档 id。空串表示没有待确认的删除。
+   *
+   * 为什么用两步确认而不是弹窗：
+   *   AlertDialog 在 2in1 的浮动窗口里位置不好控制，
+   *   而"点一次变成『确认删除』、再点一次才删"是纯状态切换，
+   *   不需要额外 API，行为也更容易验证。
+   */
+  @State pendingDeleteId: string = '';
+
+  // ---- 搜索历史 ----
+  @State history: string[] = [];
+
+  // ---- 文件导入 ----
+  @State fileStatus: string = '';
 
   aboutToAppear(): void {
     this.caps = probeCapabilities();
@@ -172,6 +199,7 @@ struct Index {
     this.searchStatus = out.hits.length === 0
       ? '没有找到相关内容'
       : `找到 ${out.hits.length} 条（候选 ${out.diagnostics.candidateCount} 条）`;
+    this.pushHistory(q);
   }
 
   private doImport(): void {
@@ -205,6 +233,155 @@ struct Index {
     this.persist();
   }
 
+  // -------------------------------------------------------------------------
+  // 详情与编辑
+  // -------------------------------------------------------------------------
+
+  private openDetail(id: string): void {
+    for (let i = 0; i < this.docs.length; i++) {
+      if (this.docs[i].id === id) {
+        this.detailId = id;
+        this.detailTitle = this.docs[i].title;
+        this.detailText = this.docs[i].text;
+        this.detailEditing = false;
+        this.detailStatus = '';
+        this.detailOpen = true;
+        return;
+      }
+    }
+  }
+
+  /** 保存编辑。走 replaceDocument，保持文档在列表中的位置。 */
+  private saveDetail(): void {
+    const t = this.detailText;
+    if (t.trim().length === 0) {
+      this.detailStatus = '内容不能为空';
+      return;
+    }
+    const input: ImportInput = {
+      title: this.detailTitle.trim().length > 0 ? this.detailTitle.trim() : '未命名资料',
+      source: 'note',
+      uri: 'note://edited/' + this.detailId,
+      text: t
+    };
+    this.svc.replaceDocument(this.detailId, input)
+      .then((r: ImportOutcome) => {
+        this.detailStatus = r.message;
+        if (r.ok) {
+          this.detailEditing = false;
+          this.refreshStats();
+          this.persist();
+          // 内容变了，旧结果已失效
+          this.hits = [];
+          this.searchStatus = '资料已更新，请重新搜索';
+        }
+      })
+      .catch((_e: Error) => { this.detailStatus = '保存失败'; });
+  }
+
+  // -------------------------------------------------------------------------
+  // 删除确认（两步）
+  // -------------------------------------------------------------------------
+
+  private askDelete(id: string): void {
+    this.pendingDeleteId = id;
+  }
+
+  private confirmDelete(): void {
+    const id = this.pendingDeleteId;
+    this.pendingDeleteId = '';
+    if (id.length === 0) {
+      return;
+    }
+    this.doRemove(id);
+  }
+
+  private cancelDelete(): void {
+    this.pendingDeleteId = '';
+  }
+
+  // -------------------------------------------------------------------------
+  // 搜索历史
+  // -------------------------------------------------------------------------
+
+  /** 记一条历史。同一条移到最前，最多保留 8 条。 */
+  private pushHistory(q: string): void {
+    const out: string[] = [];
+    out.push(q);
+    for (let i = 0; i < this.history.length && out.length < 8; i++) {
+      if (this.history[i] !== q) {
+        out.push(this.history[i]);
+      }
+    }
+    this.history = out;
+  }
+
+  private clearHistory(): void {
+    this.history = [];
+  }
+
+  // -------------------------------------------------------------------------
+  // 文件导入
+  // -------------------------------------------------------------------------
+
+  /**
+   * 用系统文件选择器导入 txt / md。
+   *
+   * DocumentViewPicker 和相册选择器一样**不需要申请权限**：
+   * 由系统界面让用户挑文件，应用只拿到那一个文件的 URI。
+   * 所以零权限的主张在这里同样成立。
+   */
+  private pickFileAndImport(): void {
+    this.fileStatus = '请选择 txt 或 md 文件…';
+    try {
+      const ctx = getContext(this) as common.UIAbilityContext;
+      // 局部变量不能叫 picker：会遮蔽导入的模块名（编译报「used before its declaration」）
+      const filePicker: picker.DocumentViewPicker = new picker.DocumentViewPicker(ctx);
+      const opts: picker.DocumentSelectOptions = new picker.DocumentSelectOptions();
+      opts.maxSelectNumber = 1;
+      const filters: string[] = ['.txt', '.md', '.markdown'];
+      opts.fileSuffixFilters = filters;
+
+      filePicker.select(opts)
+        .then((uris: string[]) => {
+          if (uris.length === 0) {
+            this.fileStatus = '没有选择文件';
+            return;
+          }
+          this.importFromUri(ctx, uris[0]);
+        })
+        .catch((_e: Error) => { this.fileStatus = '打开文件选择器失败'; });
+    } catch (e) {
+      this.fileStatus = '无法打开文件选择器';
+    }
+  }
+
+  private importFromUri(ctx: common.UIAbilityContext, uri: string): void {
+    try {
+      const text = readTextByUri(uri);
+      if (text.length === 0) {
+        this.fileStatus = '文件为空或无法读取';
+        return;
+      }
+      let name: string = uri;
+      const slash = uri.lastIndexOf('/');
+      if (slash >= 0 && slash + 1 < uri.length) {
+        name = uri.substring(slash + 1);
+      }
+      this.svc.importDocument({ title: name, source: 'file', uri: uri, text: text })
+        .then((r: ImportOutcome) => {
+          this.fileStatus = r.message;
+          if (r.ok) {
+            this.refreshStats();
+            this.persist();
+          }
+        })
+        .catch((_e: Error) => { this.fileStatus = '导入失败'; });
+    } catch (e) {
+      this.fileStatus = '读取文件失败';
+    }
+  }
+
   private runChecks(): void {
     this.checkSummary = '运行中…';
     runSelfChecks()
@@ -232,12 +409,13 @@ struct Index {
     this.pickStatus = '请在系统相册中选择图片…';
     try {
       const ctx = getContext(this) as common.UIAbilityContext;
-      const picker = new photoAccessHelper.PhotoViewPicker();
+      // 局部变量不叫 picker：会遮蔽从 @kit.CoreFileKit 导入的 picker 模块
+      const photoPicker: photoAccessHelper.PhotoViewPicker = new photoAccessHelper.PhotoViewPicker();
       const opts = new photoAccessHelper.PhotoSelectOptions();
       opts.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE;
       opts.maxSelectNumber = 1;
 
-      picker.select(opts)
+      photoPicker.select(opts)
         .then((res: photoAccessHelper.PhotoSelectResult) => {
           if (res.photoUris.length === 0) {
             this.pickStatus = '没有选择图片';
@@ -370,6 +548,29 @@ struct Index {
       }
       .width('100%')
 
+      // 搜索历史：点一下就用那个词重搜
+      if (this.history.length > 0) {
+        Row({ space: 6 }) {
+          Text('最近').fontSize(10).fontColor('#999999')
+          ForEach(this.history, (h: string) => {
+            Text(h)
+              .fontSize(10.5)
+              .fontColor('#0A59F7')
+              .padding({ left: 8, right: 8, top: 3, bottom: 3 })
+              .backgroundColor('#E8F0FE')
+              .borderRadius(10)
+              .onClick(() => {
+                this.query = h;
+                this.doSearch();
+              })
+          }, (h: string, i: number) => h + i.toString())
+          Text('清空')
+            .fontSize(10).fontColor('#999999')
+            .onClick(() => { this.clearHistory(); })
+        }
+        .width('100%')
+      }
+
       // 决策解释条
       if (this.kUsed > 0) {
         Column({ space: 3 }) {
@@ -456,11 +657,18 @@ struct Index {
             .height(34).fontSize(12)
             .backgroundColor('#0A59F7')
             .onClick(() => { this.pickImageAndOcr(); })
-          if (this.pickStatus.length > 0) {
-            Text(this.pickStatus).fontSize(10).fontColor('#666666').layoutWeight(1)
-          }
+          Button('导入文件')
+            .height(34).fontSize(12)
+            .backgroundColor('#E8F0FE').fontColor('#0A59F7')
+            .onClick(() => { this.pickFileAndImport(); })
         }
         .width('100%')
+        if (this.pickStatus.length > 0) {
+          Text(this.pickStatus).fontSize(10).fontColor('#666666').width('100%')
+        }
+        if (this.fileStatus.length > 0) {
+          Text(this.fileStatus).fontSize(10).fontColor('#0A59F7').width('100%')
+        }
         Row({ space: 8 }) {
           Button('加入资料库')
             .height(38).fontSize(13)
@@ -482,19 +690,37 @@ struct Index {
             Row({ space: 8 }) {
               Column({ space: 2 }) {
                 Text(d.title).fontSize(13).width('100%')
-                Text(`${d.source} · ${d.text.length} 字`).fontSize(10).fontColor('#888888').width('100%')
+                Text(`${d.source} · ${d.text.length} 字 · 点开查看`)
+                  .fontSize(10).fontColor('#888888').width('100%')
               }
               .layoutWeight(1)
               .alignItems(HorizontalAlign.Start)
-              Button('删除')
-                .fontSize(11).height(28)
-                .backgroundColor('#F0F0F0').fontColor('#C0392B')
-                .onClick(() => { this.doRemove(d.id); })
+
+              // 删除两步确认：一点就删在手机上太容易误触，
+              // 而资料删掉是找不回来的。
+              if (this.pendingDeleteId === d.id) {
+                Row({ space: 6 }) {
+                  Button('确认删除')
+                    .fontSize(11).height(28)
+                    .backgroundColor('#C0392B').fontColor(Color.White)
+                    .onClick(() => { this.confirmDelete(); })
+                  Button('取消')
+                    .fontSize(11).height(28)
+                    .backgroundColor('#F0F0F0').fontColor('#333333')
+                    .onClick(() => { this.cancelDelete(); })
+                }
+              } else {
+                Button('删除')
+                  .fontSize(11).height(28)
+                  .backgroundColor('#F0F0F0').fontColor('#C0392B')
+                  .onClick(() => { this.askDelete(d.id); })
+              }
             }
             .padding(10)
             .width('100%')
             .backgroundColor(Color.White)
             .borderRadius(8)
+            .onClick(() => { this.openDetail(d.id); })
           }
         }, (d: DocItem) => d.id)
       }
@@ -681,17 +907,107 @@ struct Index {
     .backgroundColor('#F5F7FA')
   }
 
+  /** 详情页：查看与编辑一份资料。打开时替换主界面，返回即关闭。 */
+  @Builder
+  detailView() {
+    Column({ space: 0 }) {
+      // 顶栏
+      Row({ space: 10 }) {
+        Button('← 返回')
+          .fontSize(13).height(34)
+          .backgroundColor('#F0F0F0').fontColor('#333333')
+          .onClick(() => {
+            this.detailOpen = false;
+            this.detailEditing = false;
+            this.detailStatus = '';
+          })
+        Text(this.detailEditing ? '编辑资料' : '资料详情')
+          .fontSize(14).fontWeight(FontWeight.Bold).layoutWeight(1)
+        if (!this.detailEditing) {
+          Button('编辑')
+            .fontSize(12).height(34)
+            .onClick(() => {
+              this.detailEditing = true;
+              this.detailStatus = '';
+            })
+        }
+      }
+      .width('100%')
+      .padding({ left: 14, right: 14, top: 12, bottom: 10 })
+      .backgroundColor('#F5F7FA')
+
+      Column({ space: 8 }) {
+        if (this.detailEditing) {
+          TextInput({ placeholder: '标题', text: this.detailTitle })
+            .height(40).fontSize(13)
+            .onChange((v: string) => { this.detailTitle = v; })
+          TextArea({ placeholder: '正文', text: this.detailText })
+            .layoutWeight(1).fontSize(12.5)
+            .onChange((v: string) => { this.detailText = v; })
+        } else {
+          Text(this.detailTitle)
+            .fontSize(15).fontWeight(FontWeight.Bold).width('100%')
+          Text(`${this.detailText.length} 字`)
+            .fontSize(10).fontColor('#888888').width('100%')
+          Scroll() {
+            Text(this.detailText)
+              .fontSize(12.5)
+              .width('100%')
+              .lineHeight(21)
+          }
+          .layoutWeight(1)
+          .width('100%')
+          .align(Alignment.TopStart)
+        }
+      }
+      .layoutWeight(1)
+      .padding(14)
+      .width('100%')
+
+      // 底栏
+      Row({ space: 10 }) {
+        if (this.detailEditing) {
+          Button('保存')
+            .height(38).fontSize(13).layoutWeight(1)
+            .onClick(() => { this.saveDetail(); })
+          Button('取消')
+            .height(38).fontSize(13).layoutWeight(1)
+            .backgroundColor('#F0F0F0').fontColor('#333333')
+            .onClick(() => {
+              this.detailEditing = false;
+              // 放弃修改：重新从列表里读回原值
+              this.openDetail(this.detailId);
+              this.detailStatus = '';
+            })
+        } else {
+          Text(this.detailStatus.length > 0 ? this.detailStatus : '只读。点「编辑」可修改内容。')
+            .fontSize(11).fontColor('#888888').layoutWeight(1)
+        }
+      }
+      .width('100%')
+      .padding({ left: 14, right: 14, top: 10, bottom: 14 })
+      .backgroundColor('#F5F7FA')
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#F5F7FA')
+  }
+
   build() {
     Column() {
-      Tabs({ barPosition: BarPosition.End, index: this.currentTab }) {
-        TabContent() { this.searchTab() }.tabBar('搜索')
-        TabContent() { this.libraryTab() }.tabBar('资料')
-        TabContent() { this.advancedTab() }.tabBar('高级')
+      if (this.detailOpen) {
+        this.detailView()
+      } else {
+        Tabs({ barPosition: BarPosition.End, index: this.currentTab }) {
+          TabContent() { this.searchTab() }.tabBar('搜索')
+          TabContent() { this.libraryTab() }.tabBar('资料')
+          TabContent() { this.advancedTab() }.tabBar('高级')
+        }
+        .onChange((i: number) => { this.currentTab = i; })
+        .barHeight(52)
+        .width('100%')
+        .height('100%')
       }
-      .onChange((i: number) => { this.currentTab = i; })
-      .barHeight(52)
-      .width('100%')
-      .height('100%')
     }
     .width('100%')
     .height('100%')
