@@ -90,6 +90,16 @@ def check():
     targets = [t for t in out.splitlines() if t.strip() and "[Empty]" not in t]
     if targets:
         print(f"  已连接设备   : {', '.join(targets)}")
+        # 调试签名的 Profile **只对登记过 UDID 的设备有效**。
+        # 装之前先把 UDID 打出来，失败时不用再去翻 AGC。
+        _, u = hdc("shell", "bm get -u")
+        for line in u.splitlines():
+            s = line.strip()
+            if len(s) >= 32 and " " not in s and s.upper() == s:
+                print(f"  设备 UDID    : {s}")
+                print("        [!] 该 UDID 必须已在签名 Profile 中登记，")
+                print("            否则安装会报 unauthorized (code:9568423)")
+                break
     else:
         print("  已连接设备   : [None] —— 需要先启动模拟器或在 DevEco 里连接真机")
         ok = False
@@ -197,11 +207,27 @@ def deploy():
     time.sleep(6)
 
     # 确认进程存活（判断是否加载期崩溃）
+    #
+    # ⚠️ 必须排除 grep / sh 自己那两行。
+    #    第一版这里直接写 `if BUNDLE in ps`，结果匹配到了
+    #    `sh -c ps -ef | grep com.xjtu.offlinelib` —— 应用明明没装成功，
+    #    却报告"进程存活"。**假阳性比没有检查更糟**：它会让人以为验证通过了。
     _, ps = hdc("shell", f"ps -ef | grep {BUNDLE}")
-    if BUNDLE in ps:
+    real_lines = []
+    for line in ps.splitlines():
+        if BUNDLE not in line:
+            continue
+        if "grep" in line or "sh -c" in line:
+            continue
+        real_lines.append(line.strip())
+    if len(real_lines) > 0:
         print("  [OK] 进程存活")
+        for line in real_lines[:2]:
+            print(f"     {line}")
     else:
-        print("  [XX] 进程不在 —— 可能加载期崩溃。取崩溃日志：")
+        print("  [XX] 进程不在 —— 应用没有真正运行。")
+        print("     先确认装上了：hdc shell bm dump -n " + BUNDLE)
+        print("     若已安装却进程不在，多半是加载期崩溃，取崩溃日志：")
         print("     hdc shell ls -t /data/log/faultlog/faultlogger/ | head -1")
         print("     hdc file recv /data/log/faultlog/faultlogger/<该文件> .")
         return 1
