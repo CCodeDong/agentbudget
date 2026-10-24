@@ -121,8 +121,66 @@ def make_foreground(size, key):
     return img
 
 
+def apply_to_project(key):
+    """
+    把选定方案的图标写进工程。
+
+    四个文件各有用处，尺寸不能混：
+      app_icon.png    216x216  封面图标（AGC 上架用）
+      background.png  288x288  分层图标背景层（满幅）
+      foreground.png  288x288  分层图标前景层（透明，图形在 58% 安全区）
+      startIcon.png   144x144  启动页图标
+    前景与背景必须分开存：系统自己合成，并按设备做圆形/圆角裁切。
+    合成后的图案只能用于封面和启动页。
+    """
+    media_e = APP / "entry" / "src" / "main" / "resources" / "base" / "media"
+    media_a = APP / "AppScope" / "resources" / "base" / "media"
+
+    bg288 = gradient(288, C_BG_TOP, C_BG_BOT).convert("RGBA")
+    fg288 = make_foreground(288, key)
+    cover288 = Image.alpha_composite(bg288, fg288)
+
+    cover288.resize((216, 216), Image.LANCZOS).save(media_a / "app_icon.png")
+    bg288.convert("RGB").save(media_e / "background.png")
+    fg288.save(media_e / "foreground.png")
+    cover288.resize((144, 144), Image.LANCZOS).save(media_e / "startIcon.png")
+
+    print("  已写入工程：")
+    for name, size in (("AppScope/app_icon.png", "216x216"),
+                       ("entry/background.png", "288x288"),
+                       ("entry/foreground.png", "288x288"),
+                       ("entry/startIcon.png", "144x144")):
+        print(f"    {name:28} {size}")
+
+    print("")
+    print("  复核：")
+    checks = ((media_a / "app_icon.png", (216, 216)),
+              (media_e / "background.png", (288, 288)),
+              (media_e / "foreground.png", (288, 288)),
+              (media_e / "startIcon.png", (144, 144)))
+    for path, want in checks:
+        im = Image.open(path)
+        ok = im.size == want
+        print(f"    {path.name:18} {im.size[0]}x{im.size[1]}  {'[OK]' if ok else '[尺寸不对]'}")
+    return 0
+
+
 def main():
-    PREVIEW.mkdir(parents=True, exist_ok=True)
+    args = sys.argv[1:]
+    if args and args[0] == "apply":
+        key = args[1].upper() if len(args) > 1 else "A"
+        if key not in DRAWERS:
+            print(f"  未知方案 {key}，可选 A / B / C")
+            return 2
+        print("=" * 74)
+        print(f"应用图标方案 {key} 写入工程")
+        print("=" * 74)
+        rc = apply_to_project(key)
+        print("")
+        print("  下一步：重新构建 HAP，确认桌面图标已变。")
+        return rc
+
+    PREVIEW.mkdir(parents=True, exist_ok=True)(parents=True, exist_ok=True)
     made = []
 
     for key in ("A", "B", "C"):
@@ -165,7 +223,7 @@ def main():
         print(f"       {p.name}")
     print(f"\n  对比图：{sheet_p.name}")
     print(f"  输出目录：{PREVIEW}")
-    print("\n  ⚠️ 选定后我才会写进工程的 layered_image / app_icon。")
+    print("\n  [!] 选定后我才会写进工程的 layered_image / app_icon。")
     return 0
 
 
