@@ -19,6 +19,7 @@ import { QueryOutcome, ImportOutcome } from '../lib/pipeline';
 import { runSelfChecks, CheckSummary, CheckResult } from '../selfcheck/SelfCheck';
 import { probeCapabilities, CapabilityProbe } from '../selfcheck/Capability';
 import { common } from '@kit.AbilityKit';
+import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import { RealOcrEngine } from '../lib/realocr';
 import { OcrResult } from '../lib/ocr';
 
@@ -60,6 +61,7 @@ struct Index {
   @State caps: CapabilityProbe[] = [];
   @State ocrStatus: string = '未运行';
   @State ocrText: string = '';
+  @State pickStatus: string = '';
 
   aboutToAppear(): void {
     this.caps = probeCapabilities();
@@ -154,6 +156,56 @@ struct Index {
   }
 
 
+
+  /**
+   * 从相册选一张图，识别后把文字填进导入框。
+   *
+   * 为什么用选择器而不是调相机：
+   * 相机需要 ohos.permission.CAMERA，会破坏本软件"零权限"的主张；
+   * 系统相册选择器不需要任何权限，由系统界面让用户挑选，
+   * 应用只拿到那一张图的 URI。
+   */
+  private pickImageAndOcr(): void {
+    this.pickStatus = '请在系统相册中选择图片…';
+    try {
+      const ctx = getContext(this) as common.UIAbilityContext;
+      const picker = new photoAccessHelper.PhotoViewPicker();
+      const opts = new photoAccessHelper.PhotoSelectOptions();
+      opts.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE;
+      opts.maxSelectNumber = 1;
+
+      picker.select(opts)
+        .then((res: photoAccessHelper.PhotoSelectResult) => {
+          if (res.photoUris.length === 0) {
+            this.pickStatus = '没有选择图片';
+            return;
+          }
+          const uri = res.photoUris[0];
+          this.pickStatus = '识别中…';
+          const engine = new RealOcrEngine(ctx);
+          engine.recognize(uri)
+            .then((r: OcrResult) => {
+              if (r.error !== undefined) {
+                this.pickStatus = r.error;
+                return;
+              }
+              // 识别结果填进导入框，由用户确认后再入库 ——
+              // 不直接入库，因为识别可能有错，用户需要看一眼
+              this.inputText = r.text;
+              if (this.inputTitle.length === 0) {
+                this.inputTitle = '图片导入 ' + new Date().toLocaleDateString();
+              }
+              this.ocrText = r.text;
+              this.ocrStatus = `识别成功：${r.text.length} 字 · 用时 ${r.elapsedMs} ms`;
+              this.pickStatus = '已填入下方输入框，确认后点「加入资料库」';
+            })
+            .catch((e: Error) => { this.pickStatus = '识别失败：' + e.message; });
+        })
+        .catch((e: Error) => { this.pickStatus = '选择图片失败：' + e.message; });
+    } catch (e) {
+      this.pickStatus = '无法打开相册选择器';
+    }
+  }
   /** L4：真实 OCR 实测（内置测试图，不依赖相机）。 */
   private runOcrTest(): void {
     this.ocrStatus = '识别中…';
@@ -300,6 +352,17 @@ struct Index {
         TextArea({ placeholder: '粘贴或输入要入库的内容…', text: this.inputText })
           .height(110).fontSize(13)
           .onChange((v: string) => { this.inputText = v; })
+
+        Row({ space: 8 }) {
+          Button('从相册选图识别')
+            .height(34).fontSize(12)
+            .backgroundColor('#0A59F7')
+            .onClick(() => { this.pickImageAndOcr(); })
+          if (this.pickStatus.length > 0) {
+            Text(this.pickStatus).fontSize(10).fontColor('#666666').layoutWeight(1)
+          }
+        }
+        .width('100%')
         Row({ space: 8 }) {
           Button('加入资料库')
             .height(38).fontSize(13)

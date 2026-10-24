@@ -20,6 +20,7 @@
 import { textRecognition } from '@kit.CoreVisionKit';
 import { image } from '@kit.ImageKit';
 import { common } from '@kit.AbilityKit';
+import { fileIo } from '@kit.CoreFileKit';
 import { OcrEngine, OcrResult } from './ocr';
 
 export class RealOcrEngine implements OcrEngine {
@@ -45,14 +46,25 @@ export class RealOcrEngine implements OcrEngine {
   /**
    * 识别一张图。
    *
-   * `imageUri` 支持两种形式：
-   *   · `rawfile:<文件名>`  —— 应用内置资源（用于自测，不依赖相机）
-   *   · 其他                —— 交给上层扩展（相机/相册路径）
+   * 支持三种来源：
+   *   · `rawfile:<文件名>`  —— 应用内置资源（自测用，不依赖用户数据）
+   *   · `file://...`        —— 系统选择器返回的文件 URI（相册/文件）
+   *   · 其他                —— 明确报错，不静默失败
+   *
+   * ⚠️ 关于"为什么不直接调相机"
+   *   调相机需要 `ohos.permission.CAMERA`，而本软件的核心主张之一是
+   *   **不申请任何系统权限**（这也是"数据不出设备"在权限层面的证据）。
+   *
+   *   系统相册选择器（PhotoViewPicker）**不需要申请权限**：
+   *   由系统界面让用户挑选，应用只拿到那一张图的 URI。
+   *   所以"导入图片做识别"可以做到零权限，"调相机拍照"不行。
+   *   取舍是明确的：宁可少一个入口，也不放弃零权限。
    */
   public async recognize(imageUri: string): Promise<OcrResult> {
     const t0: number = Date.now();
+    let file: fileIo.File | undefined = undefined;
     try {
-      let buf: ArrayBuffer | undefined = undefined;
+      let src: image.ImageSource | undefined = undefined;
 
       if (imageUri.startsWith('rawfile:')) {
         const name: string = imageUri.substring('rawfile:'.length);
@@ -60,20 +72,22 @@ export class RealOcrEngine implements OcrEngine {
         // Uint8Array 的 buffer 可能带偏移，这里拷一份干净的 ArrayBuffer
         const copy: Uint8Array = new Uint8Array(content.length);
         copy.set(content);
-        buf = copy.buffer as ArrayBuffer;
+        src = image.createImageSource(copy.buffer as ArrayBuffer);
+      } else if (imageUri.startsWith('file://') || imageUri.startsWith('datashare://')) {
+        // 选择器返回的 URI：拿到 fd 再交给解码器，不必把整个文件读进内存
+        file = fileIo.openSync(imageUri, fileIo.OpenMode.READ_ONLY);
+        src = image.createImageSource(file.fd);
       } else {
-        // 相机/相册路径尚未接入 —— 明确报错而不是静默失败
         return {
           text: '',
           confidence: 0,
           elapsedMs: Date.now() - t0,
-          error: '尚未接入相机/相册图片路径，当前只支持 rawfile: 内置图'
+          error: '不支持的图片来源：' + imageUri
         };
       }
 
-      const src: image.ImageSource = image.createImageSource(buf);
       const pm: image.PixelMap = await src.createPixelMap();
-      await src.release();
+      src.release();
 
       const conf: textRecognition.TextRecognitionConfiguration = {
         isDirectionDetectionSupported: false
@@ -81,7 +95,7 @@ export class RealOcrEngine implements OcrEngine {
       const res: textRecognition.TextRecognitionResult = await textRecognition.recognizeText(
         { pixelMap: pm }, conf
       );
-      await pm.release();
+      pm.release();
 
       const text: string = res.value;
 
@@ -100,6 +114,15 @@ export class RealOcrEngine implements OcrEngine {
         elapsedMs: Date.now() - t0,
         error: 'OCR 失败：' + msg
       };
+    } finally {
+      // 无论成功失败都要关文件描述符，否则反复识别会耗光 fd
+      if (file !== undefined) {
+        try {
+          fileIo.closeSync(file);
+        } catch (e) {
+          // 关闭失败不改变识别结果，忽略
+        }
+      }
     }
   }
 }
