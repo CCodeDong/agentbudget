@@ -7,11 +7,11 @@
         "material": {
           "certpath": "C:\\Users\\86178\\.ohos\\config\\default_offlinelib_AWTgyify_mpM5n6TEYR1yc7kAcDUTBQDGzA0gFJ3lvE=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001BDB4D17F637EEB3A71D210D1CCC131EA94F0F5E8210FA2CD90FACCEE5096AA2F45FB8C561767462",
+          "keyPassword": "0000001B85AF5DA4C619E046FB6F4A08B48E886AFCA4A1C071AFCE2D38B5D1885880ABEF8D1E6032213576",
           "profile": "C:\\Users\\86178\\.ohos\\config\\default_offlinelib_AWTgyify_mpM5n6TEYR1yc7kAcDUTBQDGzA0gFJ3lvE=.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:\\Users\\86178\\.ohos\\config\\default_offlinelib_AWTgyify_mpM5n6TEYR1yc7kAcDUTBQDGzA0gFJ3lvE=.p12",
-          "storePassword": "0000001B06D2780F1F06A7BE166D9BA710020E94D203A6EE77A016E530601F313884056F1030E19073636F"
+          "storePassword": "0000001B86F8A6A28989E30C6261AE983B873A198ACB7FE4C0A9F8468A93E8DCE2299A2967606B11A2C117"
         }
       }
     ],

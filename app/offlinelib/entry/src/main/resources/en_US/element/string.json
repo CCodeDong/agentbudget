@@ -1,16 +1,16 @@
-{
+﻿{
   "string": [
     {
       "name": "module_desc",
-      "value": "On-device multi-agent orchestration module"
+      "value": "Offline personal document library"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "Multi-agent orchestration with budget scheduling"
+      "value": "Offline document retrieval with budget-aware ranking"
     },
     {
       "name": "EntryAbility_label",
-      "value": "Edge Agents"
+      "value": "Offline Library"
     }
   ]
 }

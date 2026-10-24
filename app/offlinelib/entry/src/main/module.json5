@@ -20,21 +20,18 @@
     "deliveryWithInstall": true,
     "installationFree": false,
     "pages": "$profile:main_pages",
-    // Reading the network state is what makes the three-tier placement decision
-    // possible. Note the asymmetry: the A2A / agent-framework APIs require NO
-    // permission at all, while a plain network probe does.
-    "requestPermissions": [
-      {
-        "name": "ohos.permission.GET_NETWORK_INFO",
-        "reason": "$string:reason_network_info",
-        "usedScene": {
-          "abilities": [
-            "EntryAbility"
-          ],
-          "when": "inuse"
-        }
-      }
-    ],
+    // 权限：**一个都不申请**。
+    //
+    // 这一栏原本从调度器工程继承来了 `ohos.permission.GET_NETWORK_INFO`
+    // —— 那个应用需要读网络档位来决定"本地/边缘/云"的放置。
+    // 但**离线资料库不需要**：它不判断网络，也不发任何请求。
+    //
+    // 留着它会带来两条实际损失：
+    //   1. 我们"零网络权限"的主张就不成立了（审核和答辩都会被问）
+    //   2. "单机应用免备案"的前提变得可质疑
+    //
+    // 所以这里刻意留空。**不要因为"以后可能要用"而加回来。**
+    "requestPermissions": [],
     "abilities": [
       {
         "name": "EntryAbility",

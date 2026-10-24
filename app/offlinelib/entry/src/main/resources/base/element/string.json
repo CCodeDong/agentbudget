@@ -1,20 +1,16 @@
-{
+﻿{
   "string": [
     {
       "name": "module_desc",
-      "value": "On-device multi-agent orchestration module"
+      "value": "Offline personal document library"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "Multi-agent orchestration with budget scheduling"
+      "value": "Offline document retrieval with budget-aware ranking"
     },
     {
       "name": "EntryAbility_label",
-      "value": "Edge Agents"
-    },
-    {
-      "name": "reason_network_info",
-      "value": "Read connectivity state to choose between on-device, edge and cloud execution"
+      "value": "Offline Library"
     }
   ]
 }

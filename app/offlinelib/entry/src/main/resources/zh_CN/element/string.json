@@ -1,16 +1,16 @@
-{
+﻿{
   "string": [
     {
       "name": "module_desc",
-      "value": "边端多智能体编排模块"
+      "value": "离线个人资料库模块"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "多智能体编排与预算调度演示"
+      "value": "离线资料检索与预算感知排序"
     },
     {
       "name": "EntryAbility_label",
-      "value": "边端智能体"
+      "value": "离线资料库"
     }
   ]
 }
