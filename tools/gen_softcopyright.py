@@ -482,6 +482,247 @@ def gen_manual():
     return 0
 
 
+def gen_pdf():
+    """
+    直出 PDF。
+
+    WHY 直接生成 PDF 而不是把 docx 转过去
+        本机没有 Word / WPS / LibreOffice，转不了。
+        而且很多登记系统只收 PDF —— 直接生成反而更可控：
+        **每一页放多少行由代码决定，不依赖任何排版引擎的换行行为。**
+
+    字体选择
+        用微软雅黑（msyh.ttc）。它同时含拉丁与中文，省去在同一行里切换字体。
+        代价是拉丁字符不是等宽 —— 所以绘制前先用 stringWidth 实测最宽的行，
+        必要时自动缩小字号，保证不换行。
+    """
+    from reportlab.lib.pagesizes import A4
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.pdfgen import canvas
+
+    ok = check_sync()
+    if not ok:
+        print("\n  拒绝生成：先解决上面的不一致。")
+        return 1
+
+    lines = build_source_lines()
+    pages = (len(lines) + LINES_PER_PAGE - 1) // LINES_PER_PAGE
+
+    # 注册字体
+    font_path = None
+    for cand in (r"C:\Windows\Fonts\msyh.ttc", r"C:\Windows\Fonts\simhei.ttf",
+                 r"C:\Windows\Fonts\simsun.ttc"):
+        if Path(cand).exists():
+            font_path = cand
+            break
+    if font_path is None:
+        print("  找不到中文字体，无法生成 PDF")
+        return 2
+    pdfmetrics.registerFont(TTFont("CJK", font_path, subfontIndex=0))
+
+    W, H = A4
+    margin_lr = 56.7      # 2cm
+    margin_top = 70.0
+    margin_bottom = 60.0
+    avail_w = W - 2 * margin_lr
+    avail_h = H - margin_top - margin_bottom
+    line_h = avail_h / LINES_PER_PAGE
+
+    # 实测最宽行，必要时缩小字号
+    size = FONT_SIZE_PT
+    while size > 5.0:
+        widest = max(pdfmetrics.stringWidth(ln or " ", "CJK", size) for ln in lines)
+        if widest <= avail_w - 4:
+            break
+        size -= 0.25
+
+    print("=" * 74)
+    print("生成源代码文档 PDF")
+    print("=" * 74)
+    print(f"  逻辑行数 : {len(lines)}")
+    print(f"  每页行数 : {LINES_PER_PAGE}")
+    print(f"  总页数   : {pages}")
+    print(f"  字体     : {Path(font_path).name}")
+    print(f"  字号     : {size} pt（自动适配，可用宽 {avail_w:.0f} pt）")
+    print(f"  行高     : {line_h:.2f} pt")
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = OUT_DIR / f"源代码文档-{SOFTWARE_NAME}{VERSION}.pdf"
+    c = canvas.Canvas(str(out), pagesize=A4)
+    c.setTitle(f"{HEADER_TEXT} 源程序")
+    c.setAuthor("西安交通大学")
+
+    for page_no in range(pages):
+        chunk = lines[page_no * LINES_PER_PAGE:(page_no + 1) * LINES_PER_PAGE]
+
+        # 页眉
+        c.setFont("CJK", 9)
+        c.drawCentredString(W / 2, H - 42, HEADER_TEXT)
+        # 页脚
+        c.setFont("CJK", 9)
+        c.drawCentredString(W / 2, 32, f"第 {page_no + 1} 页")
+
+        # 正文
+        c.setFont("CJK", size)
+        y = H - margin_top
+        for ln in chunk:
+            c.drawString(margin_lr, y, ln if ln else " ")
+            y -= line_h
+        c.showPage()
+
+    c.save()
+    print(f"\n  已生成：{out}")
+    print(f"  大小  ：{out.stat().st_size:,} B")
+
+    # 用 pypdf 核对实际页数
+    try:
+        from pypdf import PdfReader
+        real = len(PdfReader(str(out)).pages)
+        print(f"  核对  ：PDF 实际 {real} 页 —— {'与预期一致' if real == pages else '不一致！'}")
+    except Exception as e:
+        print(f"  核对  ：跳过（{e}）")
+    return 0
+
+
+def gen_manual_pdf():
+    """
+    把说明书 docx 渲染成 PDF。
+
+    WHY 从 docx 渲染而不是重复写一份内容
+        两处维护同一份文字，早晚会不一致。
+        源程序文档那边已经出现过"副本与核心不一致"的教训
+        （app/.../lib/*.ts 是 projects/offlinelib-core/src/*.ts 的手工副本）。
+        所以这里让 docx 成为**唯一内容源**，PDF 只是它的渲染结果。
+    """
+    from docx import Document
+    from docx.oxml.ns import qn
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.units import cm
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.platypus import (BaseDocTemplate, Frame, ListFlowable,
+                                    ListItem, PageBreak, PageTemplate, Paragraph,
+                                    Spacer)
+
+    src = OUT_DIR / f"软件说明书-{SOFTWARE_NAME}{VERSION}.docx"
+    if not src.exists():
+        print(f"  找不到 {src.name}，请先运行 manual")
+        return 2
+
+    font_path = r"C:\Windows\Fonts\msyh.ttc"
+    if not Path(font_path).exists():
+        print("  找不到中文字体")
+        return 2
+    pdfmetrics.registerFont(TTFont("CJK", font_path, subfontIndex=0))
+
+    print("=" * 74)
+    print("生成软件说明书 PDF")
+    print("=" * 74)
+
+    # 只用 docx 里实际用到的几种字号来判定层级
+    doc = Document(str(src))
+    blocks = []
+    for p in doc.paragraphs:
+        text = p.text.strip()
+        has_break = any(b.get(qn("w:type")) == "page"
+                        for b in p._p.findall(".//" + qn("w:br")))
+        if not text:
+            if has_break:
+                blocks.append(("break", ""))
+            continue
+        size = None
+        bold = False
+        for r in p.runs:
+            if r.font.size:
+                size = r.font.size.pt
+            if r.bold:
+                bold = True
+        style = p.style.name or ""
+        if "List Bullet" in style:
+            kind = "bullet"
+        elif size and size >= 20:
+            kind = "title"
+        elif size and size >= 14:
+            kind = "h1"
+        elif size and size >= 12:
+            kind = "h2"
+        else:
+            kind = "body"
+        blocks.append((kind, text))
+        if has_break:
+            blocks.append(("break", ""))
+
+    S = {
+        "title": ParagraphStyle("t", fontName="CJK", fontSize=26, leading=36,
+                                alignment=TA_CENTER, spaceAfter=10),
+        "h1": ParagraphStyle("h1", fontName="CJK", fontSize=15, leading=22,
+                             spaceBefore=14, spaceAfter=8),
+        "h2": ParagraphStyle("h2", fontName="CJK", fontSize=12.5, leading=19,
+                             spaceBefore=10, spaceAfter=5),
+        "body": ParagraphStyle("b", fontName="CJK", fontSize=10.5, leading=17,
+                               spaceAfter=6),
+        "bullet": ParagraphStyle("bl", fontName="CJK", fontSize=10.5, leading=16),
+    }
+
+    story = []
+    pending_bullets = []
+
+    def flush_bullets():
+        if pending_bullets:
+            story.append(ListFlowable(
+                [ListItem(Paragraph(b, S["bullet"]), leftIndent=14)
+                 for b in pending_bullets],
+                bulletType="bullet", start="•", leftIndent=16,
+                bulletFontName="CJK", bulletFontSize=10))
+            story.append(Spacer(1, 4))
+            pending_bullets.clear()
+
+    for kind, text in blocks:
+        if kind != "bullet":
+            flush_bullets()
+        if kind == "break":
+            story.append(PageBreak())
+        elif kind == "title":
+            story.append(Spacer(1, 120))
+            story.append(Paragraph(text, S["title"]))
+        elif kind == "h1":
+            story.append(Paragraph(text, S["h1"]))
+        elif kind == "h2":
+            story.append(Paragraph(text, S["h2"]))
+        elif kind == "bullet":
+            pending_bullets.append(text)
+        else:
+            story.append(Paragraph(text, S["body"]))
+    flush_bullets()
+
+    out = OUT_DIR / f"软件说明书-{SOFTWARE_NAME}{VERSION}.pdf"
+
+    def on_page(canv, d):
+        canv.setFont("CJK", 9)
+        canv.drawCentredString(A4[0] / 2, 1.4 * cm, f"第 {canv.getPageNumber()} 页")
+
+    docpdf = BaseDocTemplate(str(out), pagesize=A4,
+                             leftMargin=2.4 * cm, rightMargin=2.4 * cm,
+                             topMargin=2.4 * cm, bottomMargin=2.4 * cm)
+    frame = Frame(docpdf.leftMargin, docpdf.bottomMargin,
+                  docpdf.width, docpdf.height, id="f")
+    docpdf.addPageTemplates([PageTemplate(id="p", frames=[frame], onPage=on_page)])
+    docpdf.build(story)
+
+    print(f"  已生成：{out}")
+    print(f"  大小  ：{out.stat().st_size:,} B")
+    try:
+        from pypdf import PdfReader
+        print(f"  页数  ：{len(PdfReader(str(out)).pages)}")
+    except Exception as e:
+        print(f"  页数  ：无法核对（{e}）")
+    return 0
+
+
 def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
     if cmd == "check":
@@ -490,12 +731,26 @@ def main():
         return gen_source()
     if cmd == "manual":
         return gen_manual()
+    if cmd == "manualpdf":
+        return gen_manual_pdf()
+    if cmd == "pdf":
+        return gen_pdf()
     if cmd == "all":
         rc = gen_source()
         if rc != 0:
             return rc
         print()
         return gen_manual()
+    if cmd == "everything":
+        rc = gen_source()
+        if rc != 0:
+            return rc
+        print()
+        rc = gen_manual()
+        if rc != 0:
+            return rc
+        print()
+        return gen_pdf()
     print(__doc__)
     return 2
 
