@@ -22,6 +22,7 @@ import { common } from '@kit.AbilityKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import { RealOcrEngine } from '../lib/realocr';
 import { OcrResult } from '../lib/ocr';
+import { runQualityTest, QualityRow, QUALITY_CASES } from '../selfcheck/OcrQuality';
 
 const BUDGET: BudgetInput = { latencyBudgetMs: 500, memoryBudgetKb: 4096, batteryPercent: 80 };
 // mergeAdjacent：把同一文档里相接的命中块合并成一条，避免同一段话返回多次。
@@ -63,6 +64,8 @@ struct Index {
   @State ocrStatus: string = '未运行';
   @State ocrText: string = '';
   @State pickStatus: string = '';
+  @State qualityRows: QualityRow[] = [];
+  @State qualityStatus: string = '未运行';
 
   aboutToAppear(): void {
     this.caps = probeCapabilities();
@@ -205,6 +208,32 @@ struct Index {
         .catch((e: Error) => { this.pickStatus = '选择图片失败：' + e.message; });
     } catch (e) {
       this.pickStatus = '无法打开相册选择器';
+    }
+  }
+
+  /** OCR 质量测试：用已知答案的合成图集量化退化。 */
+  private runQuality(): void {
+    this.qualityStatus = '运行中…';
+    this.qualityRows = [];
+    try {
+      const ctx = getContext(this) as common.UIAbilityContext;
+      const engine = new RealOcrEngine(ctx);
+      if (!engine.available()) {
+        this.qualityStatus = '该设备不支持 OCR，无法测试';
+        return;
+      }
+      runQualityTest(engine)
+        .then((rows: QualityRow[]) => {
+          this.qualityRows = rows;
+          let ok = 0;
+          for (let i = 0; i < rows.length; i++) {
+            if (rows[i].error === '') { ok += 1; }
+          }
+          this.qualityStatus = `完成：${ok} / ${rows.length} 张有结果`;
+        })
+        .catch((e: Error) => { this.qualityStatus = '测试失败：' + e.message; });
+    } catch (e) {
+      this.qualityStatus = '初始化失败';
     }
   }
   /** L4：真实 OCR 实测（内置测试图，不依赖相机）。 */
@@ -441,6 +470,46 @@ struct Index {
       .borderRadius(8)
 
 
+
+      // OCR 质量测试（已知答案，量化退化）
+      Column({ space: 6 }) {
+        Text('OCR 质量测试（' + QUALITY_CASES.length.toString() + ' 张已知答案的图）').fontSize(14).fontWeight(FontWeight.Bold).width('100%')
+        Text('同一段文字，不同退化条件 —— 算字符级召回/精确率，而不是靠印象')
+          .fontSize(10).fontColor('#888888').width('100%')
+        Row({ space: 10 }) {
+          Button('运行质量测试').height(36).fontSize(13)
+            .onClick(() => { this.runQuality(); })
+          Text(this.qualityStatus).fontSize(11).fontColor('#666666').layoutWeight(1)
+        }
+        .width('100%')
+        if (this.qualityRows.length > 0) {
+          Row({ space: 4 }) {
+            Text('图').fontSize(9).fontColor('#999999').width(90)
+            Text('召回').fontSize(9).fontColor('#999999').width(42)
+            Text('精确').fontSize(9).fontColor('#999999').width(42)
+            Text('F1').fontSize(9).fontColor('#999999').width(42)
+            Text('ms').fontSize(9).fontColor('#999999').width(38)
+          }
+          .width('100%')
+          ForEach(this.qualityRows, (r: QualityRow) => {
+            Row({ space: 4 }) {
+              Text(r.label).fontSize(10).width(90)
+              Text(r.error === '' ? r.recall.toFixed(0) + '%' : '—').fontSize(10)
+                .fontColor(r.recall >= 90 ? '#0A8F4C' : (r.recall >= 60 ? '#B8860B' : '#C0392B')).width(42)
+              Text(r.error === '' ? r.precision.toFixed(0) + '%' : '—').fontSize(10).width(42)
+              Text(r.error === '' ? r.f1.toFixed(0) + '%' : '—').fontSize(10).width(42)
+              Text(r.error === '' ? r.ms.toString() : '—').fontSize(10)
+                .fontColor('#888888').width(38)
+            }
+            .width('100%')
+            .padding({ top: 2, bottom: 2 })
+          }, (r: QualityRow, i: number) => r.label + i.toString())
+        }
+      }
+      .padding(12)
+      .width('100%')
+      .backgroundColor(Color.White)
+      .borderRadius(8)
       // L4：真实 OCR 实测
       Column({ space: 6 }) {
         Text('OCR 实测（CoreVisionKit）').fontSize(14).fontWeight(FontWeight.Bold).width('100%')
