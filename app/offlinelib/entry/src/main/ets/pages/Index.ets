@@ -19,6 +19,7 @@ import { QueryOutcome, ImportOutcome } from '../lib/pipeline';
 import { runSelfChecks, CheckSummary, CheckResult } from '../selfcheck/SelfCheck';
 import { probeCapabilities, CapabilityProbe } from '../selfcheck/Capability';
 import { common } from '@kit.AbilityKit';
+import { readText, writeText, hasArchive } from '../lib/librarystorage';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import { RealOcrEngine } from '../lib/realocr';
 import { OcrResult } from '../lib/ocr';
@@ -66,11 +67,61 @@ struct Index {
   @State pickStatus: string = '';
   @State qualityRows: QualityRow[] = [];
   @State qualityStatus: string = '未运行';
+  /** 持久化状态，显示在「资料」页顶部，让用户知道这次是不是真的存下来了。 */
+  @State persistStatus: string = '';
 
   aboutToAppear(): void {
     this.caps = probeCapabilities();
     this.refreshStats();
-    this.seedDemo();
+    this.restoreOrSeed();
+  }
+
+  // -------------------------------------------------------------------------
+  // 持久化
+  // -------------------------------------------------------------------------
+
+  /**
+   * 从沙箱读回资料；没有存档时才放示例。
+   *
+   * ⚠️ 这里区分两种"空"：
+   *   ① 从来没有存档（首次启动）→ 放示例，让用户知道能干什么
+   *   ② 有存档但里面没文档（用户删光了）→ **不放示例**，尊重用户的删除
+   *   把两者混为一谈，用户体验就是"删了又回来"。
+   */
+  private restoreOrSeed(): void {
+    try {
+      const ctx = getContext(this) as common.UIAbilityContext;
+      if (!hasArchive(ctx)) {
+        this.persistStatus = '首次启动，已放入示例资料';
+        this.seedDemo();
+        return;
+      }
+      const json: string = readText(ctx, 'library.json');
+      if (json.length === 0) {
+        this.persistStatus = '存档读取失败';
+        return;
+      }
+      const skipped: number = this.svc.load(json);
+      this.refreshStats();
+      this.persistStatus = skipped > 0
+        ? `已恢复 ${this.svc.docCount()} 份（跳过 ${skipped} 条损坏数据）`
+        : `已恢复 ${this.svc.docCount()} 份资料`;
+    } catch (e) {
+      this.persistStatus = '恢复失败';
+    }
+  }
+
+  /** 立即落盘。任何改动之后都要调用。 */
+  private persist(): void {
+    try {
+      const ctx = getContext(this) as common.UIAbilityContext;
+      const ok = writeText(ctx, 'library.json', this.svc.save());
+      if (!ok) {
+        this.persistStatus = '保存失败（改动仅在本次运行有效）';
+      }
+    } catch (e) {
+      this.persistStatus = '保存异常';
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -86,7 +137,11 @@ struct Index {
       '普通对话消耗一倍 token，而多智能体约为十五倍；手机能提供的上下文窗口只有四千到八千。' +
       '因此取舍是强制的：注入哪些工具、消息用什么形式、这一步在哪里执行，都要在预算内决定。';
     this.svc.importDocument({ title: '示例：预算调度笔记', source: 'note', uri: 'demo://1', text: demo })
-      .then((_r: ImportOutcome) => { this.refreshStats(); });
+      .then((_r: ImportOutcome) => {
+        this.refreshStats();
+        // 示例也要落盘：否则下次启动又会判定"没有存档"，再塞一遍
+        this.persist();
+      });
   }
 
   private refreshStats(): void {
@@ -134,6 +189,9 @@ struct Index {
           this.inputTitle = '';
           this.inputText = '';
           this.refreshStats();
+          // 每次改动立即落盘：HarmonyOS 里 UIAbility 可能被系统直接回收，
+          // "退出时保存"不可靠。
+          this.persist();
         }
       })
       .catch((_e: Error) => { this.importStatus = '导入失败'; });
@@ -144,6 +202,7 @@ struct Index {
     this.refreshStats();
     this.hits = [];
     this.searchStatus = '已删除，请重新搜索';
+    this.persist();
   }
 
   private runChecks(): void {
@@ -374,6 +433,15 @@ struct Index {
         }
       }
       .width('100%')
+
+      // 持久化状态：让用户看得见"这次有没有存下来"
+      if (this.persistStatus.length > 0) {
+        Row({ space: 6 }) {
+          Text('存档').fontSize(10).fontColor('#0A8F4C')
+          Text(this.persistStatus).fontSize(10).fontColor('#666666').layoutWeight(1)
+        }
+        .width('100%')
+      }
 
       Column({ space: 8 }) {
         TextInput({ placeholder: '标题（可留空）', text: this.inputTitle })
