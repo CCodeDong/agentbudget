@@ -510,7 +510,7 @@ struct Index {
       Span(text.substring(0, spans.length > 0 ? spans[0].start : text.length))
       ForEach(spans, (s: Span) => {
         Span(text.substring(s.start, s.end))
-          .fontColor('#C0392B')
+          .fontColor($r('app.color.danger'))
           .fontWeight(FontWeight.Bold)
       }, (_s: Span, i: number) => i.toString())
       if (spans.length > 0) {
@@ -539,25 +539,25 @@ struct Index {
       .width('100%')
 
       Row({ space: 8 }) {
-        Text('检索深度').fontSize(12).fontColor('#666666')
+        Text('检索深度').fontSize(12).fontColor($r('app.color.text_secondary'))
         Toggle({ type: ToggleType.Switch, isOn: this.useAutoK })
           .onChange((on: boolean) => { this.useAutoK = on; })
         Text(this.useAutoK ? '按得分分布自适应' : '固定 3 条')
           .fontSize(12)
-          .fontColor('#0A59F7')
+          .fontColor($r('app.color.accent'))
       }
       .width('100%')
 
       // 搜索历史：点一下就用那个词重搜
       if (this.history.length > 0) {
         Row({ space: 6 }) {
-          Text('最近').fontSize(10).fontColor('#999999')
+          Text('最近').fontSize(10).fontColor($r('app.color.text_hint'))
           ForEach(this.history, (h: string) => {
             Text(h)
               .fontSize(10.5)
-              .fontColor('#0A59F7')
+              .fontColor($r('app.color.accent'))
               .padding({ left: 8, right: 8, top: 3, bottom: 3 })
-              .backgroundColor('#E8F0FE')
+              .backgroundColor($r('app.color.accent_bg'))
               .borderRadius(10)
               .onClick(() => {
                 this.query = h;
@@ -565,7 +565,7 @@ struct Index {
               })
           }, (h: string, i: number) => h + i.toString())
           Text('清空')
-            .fontSize(10).fontColor('#999999')
+            .fontSize(10).fontColor($r('app.color.text_hint'))
             .onClick(() => { this.clearHistory(); })
         }
         .width('100%')
@@ -575,17 +575,17 @@ struct Index {
       if (this.kUsed > 0) {
         Column({ space: 3 }) {
           Text(`返回 ${this.kUsed} 条 · 来源 ${this.kSource} · 限制方 ${this.limitedBy}`)
-            .fontSize(11).fontColor('#0A59F7').width('100%')
+            .fontSize(11).fontColor($r('app.color.accent')).width('100%')
           Text(`候选 ${this.candidateCount} 条 · 资源约束：${this.budgetReason}`)
-            .fontSize(10).fontColor('#888888').width('100%')
+            .fontSize(10).fontColor($r('app.color.text_tertiary')).width('100%')
         }
         .padding(8)
         .width('100%')
-        .backgroundColor('#EEF4FF')
+        .backgroundColor($r('app.color.info_bg'))
         .borderRadius(6)
       }
 
-      Text(this.searchStatus).fontSize(11).fontColor('#888888').width('100%')
+      Text(this.searchStatus).fontSize(11).fontColor($r('app.color.text_tertiary')).width('100%')
 
       List({ space: 8 }) {
         ForEach(this.hits, (h: Hit) => {
@@ -593,14 +593,14 @@ struct Index {
             Column({ space: 4 }) {
               Row({ space: 6 }) {
                 Text(this.titleOf(h.chunk.docId)).fontSize(13).fontWeight(FontWeight.Medium).layoutWeight(1)
-                Text(h.score.toFixed(2)).fontSize(10).fontColor('#0A59F7')
+                Text(h.score.toFixed(2)).fontSize(10).fontColor($r('app.color.accent'))
               }
               .width('100%')
               this.highlightText(h.chunk.text, h.spans)
             }
             .padding(10)
             .width('100%')
-            .backgroundColor(Color.White)
+            .backgroundColor($r('app.color.card_bg'))
             .borderRadius(8)
           }
         }, (h: Hit) => h.chunk.id)
@@ -611,7 +611,7 @@ struct Index {
     .padding(14)
     .width('100%')
     .height('100%')
-    .backgroundColor('#F5F7FA')
+    .backgroundColor($r('app.color.page_bg'))
   }
 
   private titleOf(docId: string): string {
@@ -627,10 +627,10 @@ struct Index {
   libraryTab() {
     Column({ space: 10 }) {
       Row({ space: 12 }) {
-        Text(`资料 ${this.docCount} 份`).fontSize(12).fontColor('#333333')
-        Text(`片段 ${this.chunkCount} 个`).fontSize(12).fontColor('#333333')
+        Text(`资料 ${this.docCount} 份`).fontSize(12).fontColor($r('app.color.text_primary'))
+        Text(`片段 ${this.chunkCount} 个`).fontSize(12).fontColor($r('app.color.text_primary'))
         if (this.tombstone > 0) {
-          Text(`待整理 ${this.tombstone}`).fontSize(12).fontColor('#C0392B')
+          Text(`待整理 ${this.tombstone}`).fontSize(12).fontColor($r('app.color.danger'))
         }
       }
       .width('100%')
@@ -638,8 +638,8 @@ struct Index {
       // 持久化状态：让用户看得见"这次有没有存下来"
       if (this.persistStatus.length > 0) {
         Row({ space: 6 }) {
-          Text('存档').fontSize(10).fontColor('#0A8F4C')
-          Text(this.persistStatus).fontSize(10).fontColor('#666666').layoutWeight(1)
+          Text('存档').fontSize(10).fontColor($r('app.color.ok'))
+          Text(this.persistStatus).fontSize(10).fontColor($r('app.color.text_secondary')).layoutWeight(1)
         }
         .width('100%')
       }
@@ -655,33 +655,33 @@ struct Index {
         Row({ space: 8 }) {
           Button('从相册选图识别')
             .height(34).fontSize(12)
-            .backgroundColor('#0A59F7')
+            .backgroundColor($r('app.color.accent'))
             .onClick(() => { this.pickImageAndOcr(); })
           Button('导入文件')
             .height(34).fontSize(12)
-            .backgroundColor('#E8F0FE').fontColor('#0A59F7')
+            .backgroundColor($r('app.color.accent_bg')).fontColor($r('app.color.accent'))
             .onClick(() => { this.pickFileAndImport(); })
         }
         .width('100%')
         if (this.pickStatus.length > 0) {
-          Text(this.pickStatus).fontSize(10).fontColor('#666666').width('100%')
+          Text(this.pickStatus).fontSize(10).fontColor($r('app.color.text_secondary')).width('100%')
         }
         if (this.fileStatus.length > 0) {
-          Text(this.fileStatus).fontSize(10).fontColor('#0A59F7').width('100%')
+          Text(this.fileStatus).fontSize(10).fontColor($r('app.color.accent')).width('100%')
         }
         Row({ space: 8 }) {
           Button('加入资料库')
             .height(38).fontSize(13)
             .onClick(() => { this.doImport(); })
           if (this.importStatus.length > 0) {
-            Text(this.importStatus).fontSize(11).fontColor('#0A8F4C').layoutWeight(1)
+            Text(this.importStatus).fontSize(11).fontColor($r('app.color.ok')).layoutWeight(1)
           }
         }
         .width('100%')
       }
       .padding(10)
       .width('100%')
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_bg'))
       .borderRadius(8)
 
       List({ space: 6 }) {
@@ -691,7 +691,7 @@ struct Index {
               Column({ space: 2 }) {
                 Text(d.title).fontSize(13).width('100%')
                 Text(`${d.source} · ${d.text.length} 字 · 点开查看`)
-                  .fontSize(10).fontColor('#888888').width('100%')
+                  .fontSize(10).fontColor($r('app.color.text_tertiary')).width('100%')
               }
               .layoutWeight(1)
               .alignItems(HorizontalAlign.Start)
@@ -702,23 +702,23 @@ struct Index {
                 Row({ space: 6 }) {
                   Button('确认删除')
                     .fontSize(11).height(28)
-                    .backgroundColor('#C0392B').fontColor(Color.White)
+                    .backgroundColor($r('app.color.danger')).fontColor(Color.White)
                     .onClick(() => { this.confirmDelete(); })
                   Button('取消')
                     .fontSize(11).height(28)
-                    .backgroundColor('#F0F0F0').fontColor('#333333')
+                    .backgroundColor($r('app.color.subtle_bg')).fontColor($r('app.color.text_primary'))
                     .onClick(() => { this.cancelDelete(); })
                 }
               } else {
                 Button('删除')
                   .fontSize(11).height(28)
-                  .backgroundColor('#F0F0F0').fontColor('#C0392B')
+                  .backgroundColor($r('app.color.subtle_bg')).fontColor($r('app.color.danger'))
                   .onClick(() => { this.askDelete(d.id); })
               }
             }
             .padding(10)
             .width('100%')
-            .backgroundColor(Color.White)
+            .backgroundColor($r('app.color.card_bg'))
             .borderRadius(8)
             .onClick(() => { this.openDetail(d.id); })
           }
@@ -730,7 +730,7 @@ struct Index {
     .padding(14)
     .width('100%')
     .height('100%')
-    .backgroundColor('#F5F7FA')
+    .backgroundColor($r('app.color.page_bg'))
   }
 
   @Builder
@@ -740,16 +740,16 @@ struct Index {
       Column({ space: 5 }) {
         Text('设备能力探测（canIUse）').fontSize(14).fontWeight(FontWeight.Bold).width('100%')
         Text('只用 canIUse 查询，不 import 任何 Kit —— 因此不可能把应用拖崩')
-          .fontSize(10).fontColor('#888888').width('100%')
+          .fontSize(10).fontColor($r('app.color.text_tertiary')).width('100%')
         ForEach(this.caps, (c: CapabilityProbe) => {
           Row({ space: 8 }) {
             Text(c.available ? '✓' : '✗')
               .fontSize(13).width(16)
-              .fontColor(c.available ? '#0A8F4C' : '#C0392B')
+              .fontColor(c.available ? $r('app.color.ok') : $r('app.color.danger'))
             Column({ space: 1 }) {
               Text(c.label).fontSize(11.5).width('100%')
               Text(c.syscap.replace('SystemCapability.', '')).fontSize(9)
-                .fontColor('#999999').width('100%')
+                .fontColor($r('app.color.text_hint')).width('100%')
             }
             .layoutWeight(1)
             .alignItems(HorizontalAlign.Start)
@@ -760,7 +760,7 @@ struct Index {
       }
       .padding(12)
       .width('100%')
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_bg'))
       .borderRadius(8)
 
 
@@ -769,46 +769,46 @@ struct Index {
       Column({ space: 6 }) {
         Text('OCR 质量测试（' + QUALITY_CASES.length.toString() + ' 张已知答案的图）').fontSize(14).fontWeight(FontWeight.Bold).width('100%')
         Text('同一段文字，不同退化条件 —— 算字符级召回/精确率，而不是靠印象')
-          .fontSize(10).fontColor('#888888').width('100%')
+          .fontSize(10).fontColor($r('app.color.text_tertiary')).width('100%')
         Row({ space: 10 }) {
           Button('运行质量测试').height(36).fontSize(13)
             .onClick(() => { this.runQuality(); })
-          Text(this.qualityStatus).fontSize(11).fontColor('#666666').layoutWeight(1)
+          Text(this.qualityStatus).fontSize(11).fontColor($r('app.color.text_secondary')).layoutWeight(1)
         }
         .width('100%')
         if (this.qualityRows.length > 0) {
           Row({ space: 3 }) {
-            Text('图').fontSize(9).fontColor('#999999').width(86)
-            Text('召回').fontSize(9).fontColor('#999999').width(36)
-            Text('精确').fontSize(9).fontColor('#999999').width(36)
-            Text('F1').fontSize(9).fontColor('#999999').width(32)
-            Text('覆盖').fontSize(9).fontColor('#BBBBBB').width(36)
-            Text('锐度').fontSize(9).fontColor('#0A59F7').width(38)
-            Text('置信').fontSize(9).fontColor('#0A59F7').width(34)
-            Text('ms').fontSize(9).fontColor('#999999').width(30)
+            Text('图').fontSize(9).fontColor($r('app.color.text_hint')).width(86)
+            Text('召回').fontSize(9).fontColor($r('app.color.text_hint')).width(36)
+            Text('精确').fontSize(9).fontColor($r('app.color.text_hint')).width(36)
+            Text('F1').fontSize(9).fontColor($r('app.color.text_hint')).width(32)
+            Text('覆盖').fontSize(9).fontColor($r('app.color.text_faint')).width(36)
+            Text('锐度').fontSize(9).fontColor($r('app.color.accent')).width(38)
+            Text('置信').fontSize(9).fontColor($r('app.color.accent')).width(34)
+            Text('ms').fontSize(9).fontColor($r('app.color.text_hint')).width(30)
           }
           .width('100%')
           Row({ space: 3 }) {
             Text('覆盖=旧方案(已验证无效)  锐度=新方案  置信由锐度给出')
-              .fontSize(8).fontColor('#BBBBBB').width('100%')
+              .fontSize(8).fontColor($r('app.color.text_faint')).width('100%')
           }
           .width('100%')
           ForEach(this.qualityRows, (r: QualityRow) => {
             Row({ space: 3 }) {
               Text(r.label).fontSize(9.5).width(86)
               Text(r.error === '' ? r.recall.toFixed(0) + '%' : '—').fontSize(9.5)
-                .fontColor(r.recall >= 90 ? '#0A8F4C' : (r.recall >= 60 ? '#B8860B' : '#C0392B')).width(36)
+                .fontColor(r.recall >= 90 ? $r('app.color.ok') : (r.recall >= 60 ? $r('app.color.warn') : $r('app.color.danger'))).width(36)
               Text(r.error === '' ? r.precision.toFixed(0) + '%' : '—').fontSize(9.5).width(36)
               Text(r.error === '' ? r.f1.toFixed(0) + '%' : '—').fontSize(9.5).width(32)
               Text(r.coverage > 0 ? r.coverage.toFixed(2) : '—').fontSize(9.5)
-                .fontColor('#BBBBBB').width(36)
+                .fontColor($r('app.color.text_faint')).width(36)
               Text(r.sharpness > 0 ? r.sharpness.toFixed(1) : '—').fontSize(9.5)
-                .fontColor('#0A59F7').width(38)
+                .fontColor($r('app.color.accent')).width(38)
               Text(r.confidence > 0 ? r.confidence.toFixed(2) : '—').fontSize(9.5)
-                .fontColor(r.confidence >= 0.9 ? '#0A8F4C'
-                  : (r.confidence >= 0.7 ? '#B8860B' : '#C0392B')).width(34)
+                .fontColor(r.confidence >= 0.9 ? $r('app.color.ok')
+                  : (r.confidence >= 0.7 ? $r('app.color.warn') : $r('app.color.danger'))).width(34)
               Text(r.error === '' ? r.ms.toString() : '—').fontSize(9.5)
-                .fontColor('#888888').width(30)
+                .fontColor($r('app.color.text_tertiary')).width(30)
             }
             .width('100%')
             .padding({ top: 2, bottom: 2 })
@@ -817,18 +817,18 @@ struct Index {
       }
       .padding(12)
       .width('100%')
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_bg'))
       .borderRadius(8)
       // L4：真实 OCR 实测
       Column({ space: 6 }) {
         Text('OCR 实测（CoreVisionKit）').fontSize(14).fontWeight(FontWeight.Bold).width('100%')
         Text('用内置测试图跑一次真实 OCR —— 不依赖相机')
-          .fontSize(10).fontColor('#888888').width('100%')
+          .fontSize(10).fontColor($r('app.color.text_tertiary')).width('100%')
         Row({ space: 10 }) {
           Button('运行 OCR 实测')
             .height(36).fontSize(13)
             .onClick(() => { this.runOcrTest(); })
-          Text(this.ocrStatus).fontSize(11).fontColor('#666666').layoutWeight(1)
+          Text(this.ocrStatus).fontSize(11).fontColor($r('app.color.text_secondary')).layoutWeight(1)
         }
         .width('100%')
         if (this.ocrText.length > 0) {
@@ -836,18 +836,18 @@ struct Index {
             .fontSize(11)
             .width('100%')
             .padding(8)
-            .backgroundColor('#F5F7FA')
+            .backgroundColor($r('app.color.page_bg'))
             .borderRadius(6)
         }
       }
       .padding(12)
       .width('100%')
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_bg'))
       .borderRadius(8)
       Column({ space: 6 }) {
         Text('四个环节，四个信号').fontSize(14).fontWeight(FontWeight.Bold).width('100%')
         Text('这是本项目的研究主张：调度不能用单一的「剩余预算」驱动。')
-          .fontSize(11).fontColor('#666666').width('100%')
+          .fontSize(11).fontColor($r('app.color.text_secondary')).width('100%')
         Text('· 感知（OCR）→ 识别置信度决定收下/重拍/丢弃')
           .fontSize(11).width('100%')
         Text('· 索引 → 内容规模决定分块大小')
@@ -859,7 +859,7 @@ struct Index {
       }
       .padding(12)
       .width('100%')
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_bg'))
       .borderRadius(8)
 
       Column({ space: 8 }) {
@@ -868,7 +868,7 @@ struct Index {
             .height(38).fontSize(13)
             .onClick(() => { this.runChecks(); })
           Text(this.checkSummary).fontSize(12)
-            .fontColor(this.checkSummary.indexOf('全部通过') >= 0 ? '#0A8F4C' : '#666666')
+            .fontColor(this.checkSummary.indexOf('全部通过') >= 0 ? $r('app.color.ok') : $r('app.color.text_secondary'))
             .layoutWeight(1)
         }
         .width('100%')
@@ -880,10 +880,10 @@ struct Index {
                 Row({ space: 8 }) {
                   Text(c.passed ? '✓' : '✗')
                     .fontSize(13).width(18)
-                    .fontColor(c.passed ? '#0A8F4C' : '#C0392B')
+                    .fontColor(c.passed ? $r('app.color.ok') : $r('app.color.danger'))
                   Text(c.name).fontSize(11).layoutWeight(1)
                   if (!c.passed) {
-                    Text(c.detail).fontSize(10).fontColor('#C0392B')
+                    Text(c.detail).fontSize(10).fontColor($r('app.color.danger'))
                   }
                 }
                 .padding({ left: 8, right: 8, top: 5, bottom: 5 })
@@ -898,13 +898,13 @@ struct Index {
       .padding(12)
       .width('100%')
       .layoutWeight(1)
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_bg'))
       .borderRadius(8)
     }
     .padding(14)
     .width('100%')
     .height('100%')
-    .backgroundColor('#F5F7FA')
+    .backgroundColor($r('app.color.page_bg'))
   }
 
   /** 详情页：查看与编辑一份资料。打开时替换主界面，返回即关闭。 */
@@ -915,7 +915,7 @@ struct Index {
       Row({ space: 10 }) {
         Button('← 返回')
           .fontSize(13).height(34)
-          .backgroundColor('#F0F0F0').fontColor('#333333')
+          .backgroundColor($r('app.color.subtle_bg')).fontColor($r('app.color.text_primary'))
           .onClick(() => {
             this.detailOpen = false;
             this.detailEditing = false;
@@ -934,7 +934,7 @@ struct Index {
       }
       .width('100%')
       .padding({ left: 14, right: 14, top: 12, bottom: 10 })
-      .backgroundColor('#F5F7FA')
+      .backgroundColor($r('app.color.page_bg'))
 
       Column({ space: 8 }) {
         if (this.detailEditing) {
@@ -948,7 +948,7 @@ struct Index {
           Text(this.detailTitle)
             .fontSize(15).fontWeight(FontWeight.Bold).width('100%')
           Text(`${this.detailText.length} 字`)
-            .fontSize(10).fontColor('#888888').width('100%')
+            .fontSize(10).fontColor($r('app.color.text_tertiary')).width('100%')
           Scroll() {
             Text(this.detailText)
               .fontSize(12.5)
@@ -972,7 +972,7 @@ struct Index {
             .onClick(() => { this.saveDetail(); })
           Button('取消')
             .height(38).fontSize(13).layoutWeight(1)
-            .backgroundColor('#F0F0F0').fontColor('#333333')
+            .backgroundColor($r('app.color.subtle_bg')).fontColor($r('app.color.text_primary'))
             .onClick(() => {
               this.detailEditing = false;
               // 放弃修改：重新从列表里读回原值
@@ -981,36 +981,53 @@ struct Index {
             })
         } else {
           Text(this.detailStatus.length > 0 ? this.detailStatus : '只读。点「编辑」可修改内容。')
-            .fontSize(11).fontColor('#888888').layoutWeight(1)
+            .fontSize(11).fontColor($r('app.color.text_tertiary')).layoutWeight(1)
         }
       }
       .width('100%')
       .padding({ left: 14, right: 14, top: 10, bottom: 14 })
-      .backgroundColor('#F5F7FA')
+      .backgroundColor($r('app.color.page_bg'))
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F5F7FA')
+    .backgroundColor($r('app.color.page_bg'))
   }
 
   build() {
+    // 外层只负责铺底与「居中」，内容被限制最大宽度。
+    //
+    // WHY A MAX WIDTH INSTEAD OF A TWO-PANE LAYOUT
+    //   平板横屏（约 1280×800vp）和 2in1 上，如果不限宽，
+    //   一行正文会被拉到 1200vp 以上 —— 眼睛要横扫一整屏，非常难读。
+    //   限宽 + 居中是最小改动、且对三种形态都成立的做法：
+    //     手机竖屏（约 400vp） → 占满，无变化
+    //     手机横屏（约 800vp） → 占满，无变化
+    //     平板/2in1 横屏      → 居中在 900vp，两侧留白
+    //   真正的双栏（列表 + 详情同屏）是更好的形态，但改动面大，留作后续；
+    //   限宽已经解决了"拉伸难看"这个主要问题。
     Column() {
-      if (this.detailOpen) {
-        this.detailView()
-      } else {
-        Tabs({ barPosition: BarPosition.End, index: this.currentTab }) {
-          TabContent() { this.searchTab() }.tabBar('搜索')
-          TabContent() { this.libraryTab() }.tabBar('资料')
-          TabContent() { this.advancedTab() }.tabBar('高级')
+      Column() {
+        if (this.detailOpen) {
+          this.detailView()
+        } else {
+          Tabs({ barPosition: BarPosition.End, index: this.currentTab }) {
+            TabContent() { this.searchTab() }.tabBar('搜索')
+            TabContent() { this.libraryTab() }.tabBar('资料')
+            TabContent() { this.advancedTab() }.tabBar('高级')
+          }
+          .onChange((i: number) => { this.currentTab = i; })
+          .barHeight(52)
+          .width('100%')
+          .height('100%')
         }
-        .onChange((i: number) => { this.currentTab = i; })
-        .barHeight(52)
-        .width('100%')
-        .height('100%')
       }
+      .width('100%')
+      .height('100%')
+      .constraintSize({ maxWidth: 900 })
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F5F7FA')
+    .alignItems(HorizontalAlign.Center)
+    .backgroundColor($r('app.color.page_bg'))
   }
 }
