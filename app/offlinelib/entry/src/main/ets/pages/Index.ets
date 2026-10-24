@@ -18,6 +18,9 @@ import { DocItem, Hit, Span, BudgetInput, SearchOptions, DocSource } from '../li
 import { QueryOutcome, ImportOutcome } from '../lib/pipeline';
 import { runSelfChecks, CheckSummary, CheckResult } from '../selfcheck/SelfCheck';
 import { probeCapabilities, CapabilityProbe } from '../selfcheck/Capability';
+import { common } from '@kit.AbilityKit';
+import { RealOcrEngine } from '../lib/realocr';
+import { OcrResult } from '../lib/ocr';
 
 const BUDGET: BudgetInput = { latencyBudgetMs: 500, memoryBudgetKb: 4096, batteryPercent: 80 };
 const OPTS_FIXED: SearchOptions = { topK: 3, minK: 1, maxK: 20 };
@@ -55,6 +58,8 @@ struct Index {
   @State checkSummary: string = '尚未运行';
   @State checksDone: boolean = false;
   @State caps: CapabilityProbe[] = [];
+  @State ocrStatus: string = '未运行';
+  @State ocrText: string = '';
 
   aboutToAppear(): void {
     this.caps = probeCapabilities();
@@ -148,6 +153,33 @@ struct Index {
       .catch((_e: Error) => { this.checkSummary = '自测运行失败'; });
   }
 
+
+  /** L4：真实 OCR 实测（内置测试图，不依赖相机）。 */
+  private runOcrTest(): void {
+    this.ocrStatus = '识别中…';
+    this.ocrText = '';
+    try {
+      // getContext(this) 在页面里拿到的就是 UIAbilityContext
+      const ctx = getContext(this) as common.UIAbilityContext;
+      const engine = new RealOcrEngine(ctx);
+      if (!engine.available()) {
+        this.ocrStatus = '该设备不支持 OCR';
+        return;
+      }
+      engine.recognize('rawfile:ocr_sample.png')
+        .then((r: OcrResult) => {
+          if (r.error !== undefined) {
+            this.ocrStatus = r.error;
+            return;
+          }
+          this.ocrStatus = `识别成功：${r.text.length} 字 · 用时 ${r.elapsedMs} ms`;
+          this.ocrText = r.text;
+        })
+        .catch((e: Error) => { this.ocrStatus = 'OCR 调用失败：' + e.message; });
+    } catch (e) {
+      this.ocrStatus = 'OCR 初始化失败';
+    }
+  }
   // -------------------------------------------------------------------------
   // 视图片段
   // -------------------------------------------------------------------------
@@ -344,6 +376,32 @@ struct Index {
       .backgroundColor(Color.White)
       .borderRadius(8)
 
+
+      // L4：真实 OCR 实测
+      Column({ space: 6 }) {
+        Text('OCR 实测（CoreVisionKit）').fontSize(14).fontWeight(FontWeight.Bold).width('100%')
+        Text('用内置测试图跑一次真实 OCR —— 不依赖相机')
+          .fontSize(10).fontColor('#888888').width('100%')
+        Row({ space: 10 }) {
+          Button('运行 OCR 实测')
+            .height(36).fontSize(13)
+            .onClick(() => { this.runOcrTest(); })
+          Text(this.ocrStatus).fontSize(11).fontColor('#666666').layoutWeight(1)
+        }
+        .width('100%')
+        if (this.ocrText.length > 0) {
+          Text(this.ocrText)
+            .fontSize(11)
+            .width('100%')
+            .padding(8)
+            .backgroundColor('#F5F7FA')
+            .borderRadius(6)
+        }
+      }
+      .padding(12)
+      .width('100%')
+      .backgroundColor(Color.White)
+      .borderRadius(8)
       Column({ space: 6 }) {
         Text('四个环节，四个信号').fontSize(14).fontWeight(FontWeight.Bold).width('100%')
         Text('这是本项目的研究主张：调度不能用单一的「剩余预算」驱动。')

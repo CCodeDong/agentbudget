@@ -17,7 +17,7 @@
  * 这里是 Vision Kit 还是假引擎，这正是当初把 OCR 做成接口的目的。
  */
 
-import { textRecognition } from '@hms.ai.ocr.textRecognition';
+import { textRecognition } from '@kit.CoreVisionKit';
 import { image } from '@kit.ImageKit';
 import { common } from '@kit.AbilityKit';
 import { OcrEngine, OcrResult } from './ocr';
