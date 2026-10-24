@@ -55,6 +55,17 @@ export interface QualityRow {
   ms: number;
   /** 出错时的信息。 */
   error: string;
+  /**
+   * 字符覆盖率：识别字数 ÷ 行几何估算的应有字数。
+   *
+   * 把这一列和 F1 放在一起看，就能判断覆盖率是不是一个好信号：
+   * 如果覆盖率低的那几张 F1 也低，说明它确实能预警漏认。
+   */
+  coverage: number;
+  /** 图片锐度（独立于 OCR 输出的信号）。 */
+  sharpness: number;
+  /** 由锐度给出的置信度分档。 */
+  confidence: number;
 }
 
 /** 测试图清单。
@@ -180,7 +191,7 @@ export async function runQualityTest(engine: OcrEngine): Promise<QualityRow[]> {
     } catch (e) {
       const row: QualityRow = {
         label: c.label, chars: 0, recall: 0, precision: 0, f1: 0, ms: 0,
-        error: '调用异常'
+        error: '调用异常', coverage: 0, sharpness: 0, confidence: 0
       };
       rows.push(row);
       continue;
@@ -188,7 +199,7 @@ export async function runQualityTest(engine: OcrEngine): Promise<QualityRow[]> {
     if (r.error !== undefined) {
       const row: QualityRow = {
         label: c.label, chars: 0, recall: 0, precision: 0, f1: 0, ms: r.elapsedMs,
-        error: r.error
+        error: r.error, coverage: 0, sharpness: 0, confidence: 0
       };
       rows.push(row);
       continue;
@@ -201,7 +212,10 @@ export async function runQualityTest(engine: OcrEngine): Promise<QualityRow[]> {
       precision: s.precision,
       f1: s.f1,
       ms: r.elapsedMs,
-      error: ''
+      error: '',
+      coverage: r.coverage ?? 0,
+      sharpness: r.sharpness ?? 0,
+      confidence: r.confidence
     };
     rows.push(row);
   }

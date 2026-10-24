@@ -483,23 +483,38 @@ struct Index {
         }
         .width('100%')
         if (this.qualityRows.length > 0) {
-          Row({ space: 4 }) {
-            Text('图').fontSize(9).fontColor('#999999').width(90)
-            Text('召回').fontSize(9).fontColor('#999999').width(42)
-            Text('精确').fontSize(9).fontColor('#999999').width(42)
-            Text('F1').fontSize(9).fontColor('#999999').width(42)
-            Text('ms').fontSize(9).fontColor('#999999').width(38)
+          Row({ space: 3 }) {
+            Text('图').fontSize(9).fontColor('#999999').width(86)
+            Text('召回').fontSize(9).fontColor('#999999').width(36)
+            Text('精确').fontSize(9).fontColor('#999999').width(36)
+            Text('F1').fontSize(9).fontColor('#999999').width(32)
+            Text('覆盖').fontSize(9).fontColor('#BBBBBB').width(36)
+            Text('锐度').fontSize(9).fontColor('#0A59F7').width(38)
+            Text('置信').fontSize(9).fontColor('#0A59F7').width(34)
+            Text('ms').fontSize(9).fontColor('#999999').width(30)
+          }
+          .width('100%')
+          Row({ space: 3 }) {
+            Text('覆盖=旧方案(已验证无效)  锐度=新方案  置信由锐度给出')
+              .fontSize(8).fontColor('#BBBBBB').width('100%')
           }
           .width('100%')
           ForEach(this.qualityRows, (r: QualityRow) => {
-            Row({ space: 4 }) {
-              Text(r.label).fontSize(10).width(90)
-              Text(r.error === '' ? r.recall.toFixed(0) + '%' : '—').fontSize(10)
-                .fontColor(r.recall >= 90 ? '#0A8F4C' : (r.recall >= 60 ? '#B8860B' : '#C0392B')).width(42)
-              Text(r.error === '' ? r.precision.toFixed(0) + '%' : '—').fontSize(10).width(42)
-              Text(r.error === '' ? r.f1.toFixed(0) + '%' : '—').fontSize(10).width(42)
-              Text(r.error === '' ? r.ms.toString() : '—').fontSize(10)
-                .fontColor('#888888').width(38)
+            Row({ space: 3 }) {
+              Text(r.label).fontSize(9.5).width(86)
+              Text(r.error === '' ? r.recall.toFixed(0) + '%' : '—').fontSize(9.5)
+                .fontColor(r.recall >= 90 ? '#0A8F4C' : (r.recall >= 60 ? '#B8860B' : '#C0392B')).width(36)
+              Text(r.error === '' ? r.precision.toFixed(0) + '%' : '—').fontSize(9.5).width(36)
+              Text(r.error === '' ? r.f1.toFixed(0) + '%' : '—').fontSize(9.5).width(32)
+              Text(r.coverage > 0 ? r.coverage.toFixed(2) : '—').fontSize(9.5)
+                .fontColor('#BBBBBB').width(36)
+              Text(r.sharpness > 0 ? r.sharpness.toFixed(1) : '—').fontSize(9.5)
+                .fontColor('#0A59F7').width(38)
+              Text(r.confidence > 0 ? r.confidence.toFixed(2) : '—').fontSize(9.5)
+                .fontColor(r.confidence >= 0.9 ? '#0A8F4C'
+                  : (r.confidence >= 0.7 ? '#B8860B' : '#C0392B')).width(34)
+              Text(r.error === '' ? r.ms.toString() : '—').fontSize(9.5)
+                .fontColor('#888888').width(30)
             }
             .width('100%')
             .padding({ top: 2, bottom: 2 })
