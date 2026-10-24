@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 离线资料库 —— 主界面。
  *
  * 设计原则（都来自开题答辩时老师提的批评）：
@@ -17,6 +17,7 @@ import { FakeOcrEngine } from '../lib/ocr';
 import { DocItem, Hit, Span, BudgetInput, SearchOptions, DocSource } from '../lib/types';
 import { QueryOutcome, ImportOutcome } from '../lib/pipeline';
 import { runSelfChecks, CheckSummary, CheckResult } from '../selfcheck/SelfCheck';
+import { probeCapabilities, CapabilityProbe } from '../selfcheck/Capability';
 
 const BUDGET: BudgetInput = { latencyBudgetMs: 500, memoryBudgetKb: 4096, batteryPercent: 80 };
 const OPTS_FIXED: SearchOptions = { topK: 3, minK: 1, maxK: 20 };
@@ -53,8 +54,10 @@ struct Index {
   @State checks: CheckResult[] = [];
   @State checkSummary: string = '尚未运行';
   @State checksDone: boolean = false;
+  @State caps: CapabilityProbe[] = [];
 
   aboutToAppear(): void {
+    this.caps = probeCapabilities();
     this.refreshStats();
     this.seedDemo();
   }
@@ -314,6 +317,33 @@ struct Index {
   @Builder
   advancedTab() {
     Column({ space: 10 }) {
+      // 能力探测（canIUse，零风险：不 import 任何 Kit）
+      Column({ space: 5 }) {
+        Text('设备能力探测（canIUse）').fontSize(14).fontWeight(FontWeight.Bold).width('100%')
+        Text('只用 canIUse 查询，不 import 任何 Kit —— 因此不可能把应用拖崩')
+          .fontSize(10).fontColor('#888888').width('100%')
+        ForEach(this.caps, (c: CapabilityProbe) => {
+          Row({ space: 8 }) {
+            Text(c.available ? '✓' : '✗')
+              .fontSize(13).width(16)
+              .fontColor(c.available ? '#0A8F4C' : '#C0392B')
+            Column({ space: 1 }) {
+              Text(c.label).fontSize(11.5).width('100%')
+              Text(c.syscap.replace('SystemCapability.', '')).fontSize(9)
+                .fontColor('#999999').width('100%')
+            }
+            .layoutWeight(1)
+            .alignItems(HorizontalAlign.Start)
+          }
+          .width('100%')
+          .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+        }, (c: CapabilityProbe) => c.syscap)
+      }
+      .padding(12)
+      .width('100%')
+      .backgroundColor(Color.White)
+      .borderRadius(8)
+
       Column({ space: 6 }) {
         Text('四个环节，四个信号').fontSize(14).fontWeight(FontWeight.Bold).width('100%')
         Text('这是本项目的研究主张：调度不能用单一的「剩余预算」驱动。')
