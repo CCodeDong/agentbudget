@@ -41,21 +41,53 @@ SOFTWARE_NAME = "离线资料库软件"
 VERSION = "V1.0"
 HEADER_TEXT = f"{SOFTWARE_NAME} {VERSION}"
 
-# 源代码的编排顺序：从底层到上层，让审查员能看出架构
+# 源代码的编排顺序：从底层到上层，让审查员能看出架构。
+#
+# ⚠️ 顺序是有讲究的，不只是"好看"：
+#   软著规则是 —— 不足 60 页提交全部，≥60 页**只交前 30 页 + 后 30 页**。
+#   我们当前超过 60 页，所以**中间会有一段被省略**。
+#
+#   因此把**测试/辅助代码**（Capability、OcrQuality、SelfCheck）放在中间，
+#   保证被省掉的是"验证代码"而不是"实现代码"。
+#   核心算法（types → pipeline）在前 30 页，界面与设备接入在后 30 页。
 SOURCE_ORDER = [
+    # —— 前 30 页：核心算法。这六个文件是这份软件的实质，必须完整可见 ——
     "lib/types.ts",
     "lib/tokenize.ts",
     "lib/index.ts",
     "lib/search.ts",
-    "lib/store.ts",
-    "lib/ocr.ts",
     "lib/pipeline.ts",
-    "pages/Index.ets",
+    "lib/ocr.ts",
+    # —— 中间（≥60 页时整段省略）：自测与质量测试 ——
+    #    刻意放在这里：省略它们不会让审查员看不懂功能实现。
+    "selfcheck/Capability.ets",
+    "selfcheck/OcrQuality.ets",
     "selfcheck/SelfCheck.ets",
+    # —— 后 30 页：存储、设备接入与界面 ——
+    #    store 排在自测之后，是为了让"被省略的区间"完整落在三个自测文件上，
+    #    而不是切在某个实现文件的中间。顺序牺牲了一点阅读流畅，
+    #    换取"提交的 60 页里包含全部实现代码"。
+    "lib/store.ts",
+    "lib/librarystorage.ets",
+    "lib/realocr.ets",
+    "pages/Index.ets",
     "entryability/EntryAbility.ets",
 ]
 
 LINES_PER_PAGE = 50
+# 软著：页数达到这个值时，只需提交前 N 页 + 后 N 页
+FULL_SUBMIT_LIMIT = 60
+EDGE_PAGES = 30
+
+# 判定"被省略的部分会不会影响读懂核心功能"。
+# 这几个文件是这份软件的技术实质，任何一个被切都要报警。
+CRITICAL_FILES = {
+    "lib/types.ts",
+    "lib/tokenize.ts",
+    "lib/index.ts",
+    "lib/search.ts",
+    "lib/pipeline.ts",
+}
 
 
 def read_source() -> tuple[list[str], list[tuple[str, int]]]:
@@ -133,31 +165,71 @@ def main():
     total = len(lines)
     pages = (total + LINES_PER_PAGE - 1) // LINES_PER_PAGE
 
-    print("=" * 66)
+    print("=" * 72)
     print(f"软著源代码文档 —— {HEADER_TEXT}")
-    print("=" * 66)
-    print(f"  {'文件':<34}{'行数':>8}")
-    print("  " + "-" * 44)
+    print("=" * 72)
+    print(f"  {'文件':<34}{'行数':>8}{'累计页':>8}")
+    print("  " + "-" * 52)
+    cum = 0
     for rel, n in stats:
-        print(f"  {rel:<34}{n:>8}")
-    print("  " + "-" * 44)
+        cum += n + 1  # +1 是文件分隔标记
+        print(f"  {rel:<34}{n:>8}{cum / LINES_PER_PAGE:>7.1f}")
+    print("  " + "-" * 52)
     print(f"  {'合计（去空行 + 文件分隔标记）':<34}{total:>8}")
     print()
     print(f"  每页 {LINES_PER_PAGE} 行  ->  {pages} 页")
     print()
-    if pages < 60:
-        print(f"  {pages} 页 < 60 页  =>  软著要求「提交全部源代码」，正好适用。")
+
+    need_split = pages >= FULL_SUBMIT_LIMIT
+    if not need_split:
+        print(f"  {pages} 页 < {FULL_SUBMIT_LIMIT} 页  =>  软著要求「提交全部源代码」，正好适用。")
     else:
-        print(f"  {pages} 页 >= 60 页  =>  只需提交前 30 页 + 后 30 页。")
+        omitted = pages - EDGE_PAGES * 2
+        print(f"  {pages} 页 >= {FULL_SUBMIT_LIMIT} 页  =>  只提交「前 {EDGE_PAGES} 页 + 后 {EDGE_PAGES} 页」")
+        print(f"  中间第 {EDGE_PAGES + 1}–{pages - EDGE_PAGES} 页（共 {omitted} 页）不提交。")
+        print()
+        # 算一下被省略的是哪几个文件 —— 这是排序是否合理的关键
+        edge = EDGE_PAGES * LINES_PER_PAGE
+        omitted_start, omitted_end = edge, total - edge
+        cum = 0
+        omitted_files = []
+        for rel, n in stats:
+            f_start, f_end = cum, cum + n + 1
+            if f_end > omitted_start and f_start < omitted_end:
+                omitted_files.append(rel)
+            cum = f_end
+        print(f"  被省略的代码落在：{('、'.join(omitted_files)) if omitted_files else '（无）'}")
+        hit = sorted(CRITICAL_FILES & set(omitted_files))
+        if hit:
+            print(f"  [警告] 核心算法文件被省略：{('、'.join(hit))}")
+            print("         需要调整 SOURCE_ORDER，把这些文件挪到前 30 页内。")
+        else:
+            print("  核心算法（types/tokenize/index/search/pipeline）全部在前 30 页，不受影响。")
 
     if args.check:
         return 0
 
-    out = OUT / f"{SOFTWARE_NAME}{VERSION}-源代码.docx"
-    n = build_doc(lines, out)
-    print()
-    print(f"[src] 已生成：{out.relative_to(ROOT)}")
-    print(f"[src] {n} 页，页眉「{HEADER_TEXT}」")
+    if need_split:
+        # 一份完整版存档，一份提交版（只有前30+后30）
+        edge = EDGE_PAGES * LINES_PER_PAGE
+        submit_lines = lines[:edge] + lines[-edge:]
+        full_out = OUT / f"{SOFTWARE_NAME}{VERSION}-源代码-完整存档.docx"
+        sub_out = OUT / f"{SOFTWARE_NAME}{VERSION}-源代码-提交版.docx"
+        n_full = build_doc(lines, full_out)
+        n_sub = build_doc(submit_lines, sub_out)
+        print()
+        print(f"[src] 完整存档（内部参考，不提交）：{full_out.relative_to(ROOT)}")
+        print(f"      {n_full} 页")
+        print(f"[src] 提交版（{EDGE_PAGES} + {EDGE_PAGES} = {2 * EDGE_PAGES} 页）：{sub_out.relative_to(ROOT)}")
+        print(f"      {n_sub} 页  <- 这一份上传到软著系统")
+        n = n_sub
+    else:
+        out = OUT / f"{SOFTWARE_NAME}{VERSION}-源代码.docx"
+        n = build_doc(lines, out)
+        print()
+        print(f"[src] 已生成：{out.relative_to(ROOT)}")
+        print(f"[src] {n} 页，页眉「{HEADER_TEXT}」")
+
     print()
     print("  提交前请确认：")
     print("   1. 用 Word/WPS 打开检查排版（本脚本只保证行数与页眉）")
