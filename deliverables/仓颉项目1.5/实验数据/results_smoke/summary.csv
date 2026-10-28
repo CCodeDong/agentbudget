@@ -1,0 +1,7 @@
+mode,net,runs,success_rate,mean_prompt_tokens,mean_latency_ms,cloud_calls,gold_retrieved_rate,routes
+budget,weak_lan,3,1.0,586,502.62,0,1.0,"{""edge"": 3}"
+budget,weak_nolan,3,1.0,586,499.29,0,1.0,"{""on-device"": 3}"
+budget,wifi_lan,3,1.0,586,496.19,3,1.0,"{""cloud"": 3}"
+eager,weak_lan,3,1.0,586,501.25,0,1.0,"{""on-device"": 3}"
+eager,weak_nolan,3,1.0,586,495.98,0,1.0,"{""on-device"": 3}"
+eager,wifi_lan,3,1.0,586,512.35,3,1.0,"{""cloud"": 3}"

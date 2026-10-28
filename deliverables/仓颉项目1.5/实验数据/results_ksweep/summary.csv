@@ -1,0 +1,11 @@
+mode,net,budget_util,top_k,runs,success_rate,mean_prompt_tokens,mean_latency_ms,cloud_calls,gold_retrieved_rate,routes,strategies
+budget,wifi_lan,0.85,1,30,0.9,330.7,60.79,0,0.9,"{""edge"": 30}","{""two-stage-top1"": 30}"
+budget,wifi_lan,0.85,2,30,0.9333,427.1,65.69,0,0.9333,"{""edge"": 30}","{""two-stage-top2"": 30}"
+budget,wifi_lan,0.85,3,30,0.9667,526.2,70.06,0,0.9667,"{""edge"": 30}","{""two-stage-top3"": 30}"
+budget,wifi_lan,0.85,5,30,1.0,712.7,85.78,0,1.0,"{""edge"": 30}","{""two-stage-top5"": 30}"
+budget,wifi_lan,0.85,8,30,1.0,1019.8,98.21,0,1.0,"{""edge"": 30}","{""two-stage-top8"": 30}"
+eager,wifi_lan,0.85,1,30,1.0,1602.4,133.78,30,1.0,"{""cloud"": 30}","{""eager-all"": 30}"
+eager,wifi_lan,0.85,2,30,1.0,1602.4,124.89,30,1.0,"{""cloud"": 30}","{""eager-all"": 30}"
+eager,wifi_lan,0.85,3,30,1.0,1602.4,123.14,30,1.0,"{""cloud"": 30}","{""eager-all"": 30}"
+eager,wifi_lan,0.85,5,30,1.0,1602.4,127.6,30,1.0,"{""cloud"": 30}","{""eager-all"": 30}"
+eager,wifi_lan,0.85,8,30,1.0,1602.4,128.03,30,1.0,"{""cloud"": 30}","{""eager-all"": 30}"
