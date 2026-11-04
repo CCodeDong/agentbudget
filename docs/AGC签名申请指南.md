@@ -142,7 +142,7 @@ keytool -certreq -alias offlinelib_release -keystore D:\keys\offlinelib.p12 `
 
 | 权限 | 我们是否需要 |
 |---|---|
-| `ohos.permission.CAMERA` | ✅ 拍照导入需要 |
+| `ohos.permission.CAMERA` | ❌ **不需要** —— 本应用不调相机，改用系统相册选择器（无需权限） |
 | `ohos.permission.READ_IMAGEVIDEO` | ✅ 从相册选图需要 |
 | `ohos.permission.READ_WRITE_DOWNLOAD_DIRECTORY` | ✅ 从文件导入需要 |
 | **`ohos.permission.INTERNET`** | ❌ **绝对不要勾** |
