@@ -104,3 +104,25 @@ app/offlinelib/build/
 app/offlinelib/**/build/
 app/offlinelib/_out/
 _out/
+
+# ---------------------------------------------------------------------------
+# 2026-11-04 整理新增
+# ---------------------------------------------------------------------------
+# 旧版/ —— 历史版本归档（约 75 MB）。**不进 git**，避免仓库膨胀。
+#   需要找回某个旧文件时，用 git 历史：
+#     git log --diff-filter=D --name-only | Select-String "文件名"
+#     git show <commit>:<path> > 恢复到某处
+旧版/
+
+# PPT / 报告生成的临时目录
+_out/
+_stage/
+
+# hvigor 与 npm 的重定向缓存（构建时自动重建）
+app/*/_hvhome/
+app/*/_npmcache/
+app/*/.hvigor/
+app/*/.idea/
+
+# Office 临时锁文件（打开文档时生成，绝不应入库）
+~\$*
