@@ -1,17 +1,24 @@
 #!/usr/bin/env python3
 """
-在**现有**开题报告上做定点修改（不重新生成，避免覆盖人工修订）。
+修补开题报告封面 + 脱敏 Git 指南。
 
-改什么
-  1. 封面「项目成员」去掉重复的组长（组长已单列）
-  2. 封面补「指导教师」与「小组名称」（小组名按各课程 PPT 取值）
-  3. 移动报告的进度表修正软著状态 —— 实际 2026-10-28 已提交
-     （流水号 2026R11L3771548，待受理），原稿写成 W9–W10 待办
+背景
+  2026-11-10 复核发现：两份报告的封面回到了未修补状态
+  （成员行含组长、缺指导教师与小组名称）。进度表的修复仍在。
+
+本脚本做的事
+  1. 成员行改为只列「李丛容、陈皖」（组长已单列，不应重复）
+  2. 在成员行**之后**插入「指导教师」与「小组名称」——用 addnext 保证顺序，
+     而不是 insert_paragraph_before（后者会让两行都跑到成员行前面）
+  3. 写入的文本**不含 markdown 星号**，避免原样印出
+  4. `docs/Git-GitHub同步指南.md` 里的真实邮箱与 GitCode 身份脱敏
+     （该文件已公开可见，不应含个人信息）
 
 USAGE
     python tools/patch_reports.py
 """
 
+import re
 import sys
 from pathlib import Path
 
@@ -25,106 +32,107 @@ D = ROOT / "立项"
 TEACHER = "谢涛"
 MEMBERS = "李丛容、陈皖"
 
-# 小组名按各课程 PPT 封面取值
 COURSES = {
     "《移动应用开发》项目开题报告.docx": "隔壁老王说的队",
     "《仓颉语言程序设计》项目开题报告.docx": "第六组-仓颉开天辟地补天射日填海捣药造字组",
 }
 
 
-def _cn(run, size=18):
+def _set(run, size=18, bold=False):
     run.font.name = "宋体"
     run._element.rPr.rFonts.set(qn("w:eastAsia"), "宋体")
     run.font.size = Pt(size)
+    run.font.bold = bold
 
 
-def fix_cover(doc, group_name):
-    paras = doc.paragraphs
-    for p in paras:
-        t = p.text.strip()
-        # 成员行去重：组长已单列，成员不应再含组长
-        if t.startswith("项 目 成 员"):
-            for r in list(p.runs):
-                r.text = ""
-            _cn(p.add_run(f"　{MEMBERS}"))
-            print(f"    ✅ 成员改为：{MEMBERS}")
-            break
+def _insert_after(anchor, text):
+    """在 anchor 段落之后插入一段并写入 text，返回新段落。
 
-    # 在成员行之后插入 指导教师 / 小组名称
-    anchor = None
-    for p in paras:
+    python-docx 没有 insert_paragraph_after，这里用底层 lxml：
+    先造一个段，从原位置摘掉，再挂到 anchor 之后。
+    """
+    new = anchor.insert_paragraph_before()
+    new._p.getparent().remove(new._p)
+    anchor._p.addnext(new._p)
+    for r in list(new.runs):
+        r.text = ""
+    _set(new.add_run(text))
+    return new
+
+
+def patch_cover(f: Path, group: str):
+    doc = Document(f)
+    member = None
+    for p in doc.paragraphs:
         if p.text.strip().startswith("项 目 成 员"):
-            anchor = p
+            member = p
             break
-    if anchor is None:
+    if member is None:
         print("    ⚠️ 找不到成员行")
         return
 
-    have = "\n".join(x.text for x in paras)
-    if "指导教师" in have and TEACHER in have:
-        print("    ⏭ 指导教师已存在")
+    # 1) 成员行：保留标签，只换人名
+    for r in list(member.runs):
+        r.text = ""
+    _set(member.add_run(f"项 目 成 员：　{MEMBERS}"))
+    print(f"    ✅ 成员行 → 项 目 成 员：{MEMBERS}")
+
+    last = member
+    have = "\n".join(p.text for p in doc.paragraphs)
+
+    if "指 导 教 师" not in have:
+        np = _insert_after(last, f"指 导 教 师：　{TEACHER}")
+        np.alignment = member.alignment
+        last = np
+        print(f"    ✅ 补「指导教师：{TEACHER}」")
+
+    if group not in have:
+        np = _insert_after(last, f"小 组 名 称：　{group}")
+        np.alignment = member.alignment
+        print(f"    ✅ 补「小组名称：{group}」")
+
+    doc.save(f)
+
+
+def scrub_git_guide():
+    """Git 指南已公开，脱敏真实邮箱与 GitCode 身份。"""
+    f = ROOT / "docs" / "Git-GitHub同步指南.md"
+    if not f.exists():
+        return
+    t = f.read_text(encoding="utf-8")
+    before = t
+    t = re.sub(r"CCodeDong <\d+@qq\.com>", "你的用户名 <你的 GitHub 邮箱>", t)
+    t = re.sub(r'"\d+@qq\.com"', '"你的GitHub邮箱"', t)
+    t = re.sub(r"2603_\d+@noreply\.gitcode\.com", "你的GitCode身份@noreply.gitcode.com", t)
+    t = re.sub(r"2603_\d+", "你的GitCode用户名", t)
+    if t != before:
+        if "本文件已脱敏" not in t:
+            note = ("\n> ⚠️ **本文件已脱敏**：仓库公开后，文中真实邮箱与 GitCode 身份已替换为占位符。\n"
+                    "> 你自己配置时请填真实值。\n")
+            lines = t.split("\n")
+            for i, l in enumerate(lines):
+                if l.startswith("# "):
+                    lines.insert(i + 2, note)
+                    break
+            t = "\n".join(lines)
+        f.write_text(t, encoding="utf-8")
+        print(f"    ✅ 已脱敏（{len(before)} → {len(t)} 字符）")
     else:
-        newp = anchor.insert_paragraph_before()
-        newp.alignment = anchor.alignment
-        _cn(newp.add_run(f"指 导 教 师：　{TEACHER}"))
-        print(f"    ✅ 已补指导教师：{TEACHER}")
-
-    if group_name in have:
-        print("    ⏭ 小组名称已存在")
-    else:
-        newp2 = anchor.insert_paragraph_before()
-        newp2.alignment = anchor.alignment
-        _cn(newp2.add_run(f"小 组 名 称：　{group_name}"))
-        print(f"    ✅ 已补小组名称：{group_name}")
-
-
-def fix_mobile_schedule(doc):
-    """移动报告：进度表按实际状态修正（软著已提交）。"""
-    reps = {
-        "第 7 至 8 周：完成 OCR 在 12 种退化条件下的质量测试与置信度信号验证；补齐资料详情页、编辑与删除确认；完成深色模式与宽屏适配。":
-        "第 7 周（当前）：完成 OCR 在 12 种退化条件下的质量测试与置信度信号验证；补齐资料详情页、编辑与删除确认；"
-        "完成深色模式与宽屏适配；上架四项材料备齐。**软著已于 10 月 28 日提交**"
-        "（流水号 2026R11L3771548，状态待受理）。",
-        "第 9 至 10 周：整理软著登记材料（源代码前后各 30 页、软件说明书）并完成提交；准备隐私政策、应用图标、商店文案等上架材料。":
-        "第 8 至 9 周：申请 AppGallery Connect 发布证书与 Profile，完成 release 构建与稳定性自检。",
-        "第 11 至 12 周：申请 AppGallery Connect 发布证书与 Profile，完成 release 构建与稳定性自检；提交应用市场，并按审核意见整改。":
-        "第 10 至 11 周：在有真实手机的条件下安装验证一次；提交应用市场，并按审核意见整改。",
-        "第 13 至 14 周：完成端侧调度实验，测量固定召回深度与自适应召回深度在延迟、内存、精确率上的差异，产出实验数据与图表。":
-        "第 12 至 13 周：软著下证（预期，普通件 20 至 30 个工作日）；上架复检；"
-        "并完成端侧调度实验，测量固定召回深度与自适应召回深度在延迟、内存、精确率上的差异。",
-        "第 15 至 16 周：完成课程设计报告、结课答辩 PPT 与演示视频，进行上架复检与全部交付物的最终核对。":
-        "第 14 至 16 周：完成课程设计报告、结课答辩 PPT 与演示视频，进行全部交付物的最终核对。",
-    }
-    hit = 0
-    for p in doc.paragraphs:
-        for old, new in reps.items():
-            if p.text.strip() == old:
-                for r in list(p.runs):
-                    r.text = ""
-                # 保留原样式：复用第一个 run 的格式
-                run = p.add_run(new)
-                run.font.name = "宋体"
-                run._element.rPr.rFonts.set(qn("w:eastAsia"), "宋体")
-                run.font.size = Pt(12)
-                hit += 1
-                print(f"    ✅ 替换进度段：{old[:26]}…")
-    if hit == 0:
-        print("    ⚠️ 进度段未匹配到（可能已被手工改过）")
+        print("    ⏭ 无需改动")
 
 
 def main():
     for fname, group in COURSES.items():
         f = D / fname
         if not f.exists():
-            print(f"  [跳过] {fname} 不存在")
+            print(f"  [跳过] {fname}")
             continue
         print(f"\n[{fname}]")
-        doc = Document(f)
-        fix_cover(doc, group)
-        if "移动应用开发" in fname:
-            fix_mobile_schedule(doc)
-        doc.save(f)
+        patch_cover(f, group)
         print(f"    已保存（{f.stat().st_size:,} B）")
+
+    print("\n[docs/Git-GitHub同步指南.md]")
+    scrub_git_guide()
     return 0
 
 

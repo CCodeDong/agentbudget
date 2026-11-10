@@ -1,5 +1,9 @@
 # Git / GitHub 同步指南（零基础版）
 
+
+> ⚠️ **本文件已脱敏**：仓库公开后，文中真实邮箱与 GitCode 身份已替换为占位符。
+> 你自己配置时请填真实值。
+
 > 你从没用过 Git。这份文档从"装好之后第一件事"讲起，每一步都有**命令 + 预期输出**。
 > 照着做即可，不需要理解原理。
 >
@@ -16,7 +20,7 @@
 | Git 安装 | ✅ `git version 2.53.0.windows.1` |
 | 本地仓库 | ✅ `C:\Users\86178\Documents\deepseek-harness\Project\.git` |
 | 忽略规则 | ✅ `.gitignore` 已写好，排除约 60 MB 构建缓存 |
-| Git 身份 | ✅ `CCodeDong <3221162228@qq.com>`（**仓库级**，见下方说明） |
+| Git 身份 | ✅ `你的用户名 <你的 GitHub 邮箱>`（**仓库级**，见下方说明） |
 | 首次提交 | ✅ `51d9037`，213 文件 / 16.4 MB |
 | 分支名 | ✅ `main`（已与 GitHub 默认一致） |
 | 远程地址 | ✅ `https://github.com/CCodeDong/agentbudget.git` |
@@ -33,16 +37,16 @@
 ```powershell
 cd C:\Users\86178\Documents\deepseek-harness\Project
 git config user.name  "CCodeDong"
-git config user.email "3221162228@qq.com"
+git config user.email "你的GitHub邮箱"
 ```
 
-**这反而更好**：你的全局身份仍是 GitCode 的（`2603_95354193@noreply.gitcode.com`），
+**这反而更好**：你的全局身份仍是 GitCode 的（`你的GitCode身份@noreply.gitcode.com`），
 如果之后要参加开源鸿蒙大赛往 GitCode 推代码，两套身份互不干扰。
 
 > 若将来想让全局也改成 GitHub 身份，在**你自己的、非受限的** PowerShell 里跑：
 > ```powershell
 > git config --global user.name "CCodeDong"
-> git config --global user.email "3221162228@qq.com"
+> git config --global user.email "你的GitHub邮箱"
 > ```
 > 注意邮箱**不要带多余空格**。
 
@@ -68,8 +72,8 @@ git config user.email "3221162228@qq.com"
 你电脑上现在的 Git 身份是 **GitCode** 的：
 
 ```
-user.name  : 2603_95354193
-user.email : 2603_95354193@noreply.gitcode.com
+user.name  : 你的GitCode用户名
+user.email : 你的GitCode身份@noreply.gitcode.com
 ```
 
 **如果不改，你推到 GitHub 的提交会显示成一个陌生名字，且不会算到你的 GitHub 账号上。**
