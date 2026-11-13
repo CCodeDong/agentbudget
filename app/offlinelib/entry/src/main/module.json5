@@ -4,18 +4,18 @@
     "type": "entry",
     "description": "$string:module_desc",
     "mainElement": "EntryAbility",
-    // ⚠️ "2in1" 是**临时加的**，只为在 MateBook Pro（2in1 / API 23）上做 L3 验证。
+    // deviceTypes 是**安装门槛**：设备形态不在列表里时 HAP 会被拒绝安装，
+    // 不是"显示了但不好用"，是根本装不上。
     //
-    //    提交应用市场前必须删掉这一行，理由有两条：
-    //      1. AGC 里「支持设备」勾的是 手机 + 平板，与这里不一致会被审核问
-    //      2. 勾了 2in1 就要保证在 PC 形态上可用，而我们的界面只针对手机/平板设计
+    // 只声明 phone 与 tablet，与 AGC 里「支持设备」勾选保持一致。
     //
-    //    加它的原因：deviceTypes 是**安装门槛**——设备形态不在列表里时
-    //    HAP 会被拒绝安装，不是"显示了但不好用"，是根本装不上。
+    // 历史：曾经临时加过 "2in1"，只为在 MateBook Pro（2in1 / API 23）上做
+    // L3 验证。该设备已回收，且 AGC 支持设备不含 PC，故已移除。
+    // 若将来要支持 PC 形态，需要：① 加回 2in1 ② 在 MateBook 模拟器上验证
+    // ③ 同时在 AGC 勾选 PC/2in1，三者缺一不可。
     "deviceTypes": [
       "phone",
-      "tablet",
-      "2in1"
+      "tablet"
     ],
     "deliveryWithInstall": true,
     "installationFree": false,
