@@ -1,0 +1,434 @@
+{
+  "purpose": "检索评估的冻结语料；评测只读本目录，不随仓库内容漂移",
+  "created": "2026-11-10",
+  "rule": "仓库内 .md，>800 B；排除 旧版/ paper/ stdx/ samples/ 与构建产物",
+  "file_count": 85,
+  "total_bytes": 1060938,
+  "files": [
+    {
+      "path": "cangjie-stdx-1.0.5-windows-manual.md",
+      "bytes": 41589,
+      "sha256": "cfd3168a3e1d8dde9e12ca8e31ffa19d0bf68bb408db0513379c952b92289eeb"
+    },
+    {
+      "path": "deliverables/README.md",
+      "bytes": 8507,
+      "sha256": "8aff22e94ec0c9d44f6bce26fd9063c850c920af265b6d4d2ae30324b11e36ed"
+    },
+    {
+      "path": "deliverables/仓颉项目1.5/01-立项PPT大纲.md",
+      "bytes": 12336,
+      "sha256": "25768c5921c7adac95d62e8d7390876a76940a5631ebf7fb820bf2a9945f5dbc"
+    },
+    {
+      "path": "deliverables/仓颉项目1.5/02-判断表-调研与文献.md",
+      "bytes": 4971,
+      "sha256": "a3677604d2d55afcc9a81f21d10d6d489a2b4082d99f25c8b2080cfddd911dad"
+    },
+    {
+      "path": "deliverables/仓颉项目1.5/03-原计划吻合度核对.md",
+      "bytes": 5696,
+      "sha256": "a7b7052e1136163876c94704a3901bcd774aa48905e10aabb0769ba8413ae3a3"
+    },
+    {
+      "path": "deliverables/仓颉项目1.5/04-PPT验收报告.md",
+      "bytes": 6418,
+      "sha256": "de5af749efd9e156e6396ca3fd05c6ff120694ebb380534079091c1513e3dd17"
+    },
+    {
+      "path": "deliverables/仓颉项目1.5/README.md",
+      "bytes": 7019,
+      "sha256": "c915f7681f3a13d82c2700c51d21f286d2915647c64da27db0dc02feeb633f8d"
+    },
+    {
+      "path": "deliverables/仓颉项目1.5/关键文档/02-仓颉技术验证报告.md",
+      "bytes": 8757,
+      "sha256": "fac397fa3f583f8a842e26fe957aba7c0da48932d2f776254580c5b49d5bd9e8"
+    },
+    {
+      "path": "deliverables/仓颉项目1.5/关键文档/06-实验管线验证结果.md",
+      "bytes": 7943,
+      "sha256": "8e85580f8bd3611630d5a48345610cf2de9fca9eb300c6c6ddef91c42f74e346"
+    },
+    {
+      "path": "deliverables/仓颉项目1.5/关键文档/07-压缩代价实验.md",
+      "bytes": 8776,
+      "sha256": "973877d60ec2388a4b33e83374a62ab7f8b877f148740c808b7ebac690c4e110"
+    },
+    {
+      "path": "deliverables/仓颉项目1.5/关键文档/08-k扫描与Pareto前沿.md",
+      "bytes": 6574,
+      "sha256": "16d042027105c682bc95cc85f770ae6f8464eafa4a903fb2dd3c121083304cfd"
+    },
+    {
+      "path": "deliverables/仓颉项目1.5/关键文档/09-消息表示实验.md",
+      "bytes": 8025,
+      "sha256": "18ca48a8b280ba4d17b971b9acca1060c4ad4c0310c6f07eddc666543bad0b59"
+    },
+    {
+      "path": "deliverables/仓颉项目1.5/关键文档/12-摘要预算敏感性.md",
+      "bytes": 7272,
+      "sha256": "df50c09591e4fb0d0ae2fa512efdc9d8567897ec78c4a3f86817406ea3daef54"
+    },
+    {
+      "path": "deliverables/仓颉项目1.5/关键文档/13-自适应k的负面结果.md",
+      "bytes": 7035,
+      "sha256": "22dede731d32a9dec375427821cb083d6d886ef099eb412183e5ecd441fad9f5"
+    },
+    {
+      "path": "deliverables/仓颉项目1.5/关键文档/14-得分驱动自适应k.md",
+      "bytes": 9933,
+      "sha256": "14addd3169ff3fca4cf2eb76c1cd5ec5d01f2ba0e639e3b3cfbbd160f4237c37"
+    },
+    {
+      "path": "deliverables/仓颉项目1.5/论文/01-论文初稿.md",
+      "bytes": 74483,
+      "sha256": "f1a68ee23e6d28635bc1f69e1f1052682dd2c16ef288abaf95f5d6acb5162a2d"
+    },
+    {
+      "path": "deliverables/仓颉项目1.5/论文/02-参考文献.md",
+      "bytes": 23418,
+      "sha256": "8f6f447c82e1092afefe776cf63ebcc0ac834ee6b433a2617d7b5ba4cb3de05f"
+    },
+    {
+      "path": "deliverables/移动项目1.5/01-立项PPT大纲.md",
+      "bytes": 13554,
+      "sha256": "2d23b305e2b7831d495043bacf32c6e8609378346ab24936bc3ee9bbc0936548"
+    },
+    {
+      "path": "deliverables/移动项目1.5/02-判断表-调研与文献.md",
+      "bytes": 4971,
+      "sha256": "a3677604d2d55afcc9a81f21d10d6d489a2b4082d99f25c8b2080cfddd911dad"
+    },
+    {
+      "path": "deliverables/移动项目1.5/03-原计划吻合度核对.md",
+      "bytes": 5696,
+      "sha256": "a7b7052e1136163876c94704a3901bcd774aa48905e10aabb0769ba8413ae3a3"
+    },
+    {
+      "path": "deliverables/移动项目1.5/04-PPT验收报告.md",
+      "bytes": 4969,
+      "sha256": "3070b6bb4af2d6c82caef5f3ee1a6fa2346d74b567f86128d73ba6c3ea8410a7"
+    },
+    {
+      "path": "deliverables/移动项目1.5/README.md",
+      "bytes": 7892,
+      "sha256": "0479321deacdc21002d1f7f06c1e8c9b54ad81ae512edfa25d61d93327071a95"
+    },
+    {
+      "path": "deliverables/移动项目1.5/上架材料/上架材料清单.md",
+      "bytes": 6181,
+      "sha256": "dc015085a4da1625a45adf936d09121a620de9a4d7acf0b026cf5cb9397ba50e"
+    },
+    {
+      "path": "deliverables/移动项目1.5/上架材料/商店文案.md",
+      "bytes": 4107,
+      "sha256": "a29be2992788fcb9f4db251c23ab5a8df3b6692872506a8dda533ac2cba84976"
+    },
+    {
+      "path": "deliverables/移动项目1.5/上架材料/图标/图标采用说明.md",
+      "bytes": 1031,
+      "sha256": "5c0a697c6184c00c20143e9ee1c74d305aa138a07f99c58c8d68ed74e5e4db30"
+    },
+    {
+      "path": "deliverables/移动项目1.5/上架材料/隐私政策/隐私政策.md",
+      "bytes": 5335,
+      "sha256": "df6a7d0f83353e1fa18b90b92e5e4117562ad3cbaa0194a3f556e5ea0f294af7"
+    },
+    {
+      "path": "deliverables/移动项目1.5/上架材料/隐私政策.md",
+      "bytes": 5367,
+      "sha256": "1385434920bb8ae02ef9d1f32d2243aeb096793ec53f970cc0cd95f14efea9a7"
+    },
+    {
+      "path": "deliverables/移动项目1.5/关键文档/12周上架执行计划.md",
+      "bytes": 12596,
+      "sha256": "940aead870c170e2ea5143ba7793c4626dc1f158c0c6e345738accdec9dd2feb"
+    },
+    {
+      "path": "deliverables/移动项目1.5/关键文档/AGC签名申请指南.md",
+      "bytes": 6520,
+      "sha256": "17f147e8b68ac9204c2c55e11b13398aa08efcb824bfc34f64b7e8f5b8e54c08"
+    },
+    {
+      "path": "deliverables/移动项目1.5/关键文档/ArkTS测试策略.md",
+      "bytes": 6744,
+      "sha256": "63f143c4d45121227915e0cb4d5ff172ddf897b777361611cafba95b66e2847c"
+    },
+    {
+      "path": "deliverables/移动项目1.5/关键文档/软著填表指南.md",
+      "bytes": 13879,
+      "sha256": "3bb768e4ab0b333a0f7c3ea5d51d79ebf1fa150c1c10ce6ad91512905f93ad06"
+    },
+    {
+      "path": "deliverables/移动项目1.5/关键文档/软著登记材料清单.md",
+      "bytes": 6501,
+      "sha256": "9e227f446cf417acf9a489ae61b180c47e8dcd6d1349daee6316cb3af4b28c6c"
+    },
+    {
+      "path": "deliverables/移动项目1.5/论文/01-论文初稿.md",
+      "bytes": 74483,
+      "sha256": "f1a68ee23e6d28635bc1f69e1f1052682dd2c16ef288abaf95f5d6acb5162a2d"
+    },
+    {
+      "path": "deliverables/移动项目1.5/论文/02-参考文献.md",
+      "bytes": 23418,
+      "sha256": "8f6f447c82e1092afefe776cf63ebcc0ac834ee6b433a2617d7b5ba4cb3de05f"
+    },
+    {
+      "path": "deliverables/移动项目1.5/软著/01-申请表填写说明.md",
+      "bytes": 11458,
+      "sha256": "3411e974cb03cc6fec3a2c9e1cdad3d9e6e5bfc2776ae517e5b67c0a65ae8ab7"
+    },
+    {
+      "path": "deliverables/移动项目1.5/验证证据/L11 主题与宽屏/L11验证记录.md",
+      "bytes": 2549,
+      "sha256": "e5aff4aab3d90638d62ec98fd5356088bed32f2d249144402aaa8f44c43e8cb2"
+    },
+    {
+      "path": "deliverables/移动项目1.5/验证证据/L3真机验证/L3验证记录.md",
+      "bytes": 2068,
+      "sha256": "087640ee370d5b47b43a19ba4c66b941633d16258659ee42305993a9fbb7d7ed"
+    },
+    {
+      "path": "deliverables/移动项目1.5/验证证据/L4真实OCR/L4验证记录.md",
+      "bytes": 3129,
+      "sha256": "7f0b95f037e2c76fc5dab733d572726087650b64c6ad301f3975c667aa9c766d"
+    },
+    {
+      "path": "deliverables/移动项目1.5/验证证据/L6手机形态与能力差异/L6验证记录.md",
+      "bytes": 2804,
+      "sha256": "1d2da9c6b2c5a11a5fc241f368088686bc83c4217e79f7076dde33967e084912"
+    },
+    {
+      "path": "deliverables/移动项目1.5/验证证据/L7 OCR质量测试/L7验证记录.md",
+      "bytes": 4083,
+      "sha256": "ea810bfedd3fd0e49bb0c2e1c2f155fe03dc4ee0f51e397e6b68ea70f3f83f4f"
+    },
+    {
+      "path": "deliverables/移动项目1.5/验证证据/L8 置信度信号/L8验证记录.md",
+      "bytes": 4151,
+      "sha256": "778e6bc6cab3a20c8e747523ca2a178b94ca4608c7ade184082c866c47f2ef71"
+    },
+    {
+      "path": "deliverables/移动项目1.5/验证证据/L9 数据持久化/L9验证记录.md",
+      "bytes": 1848,
+      "sha256": "0e381b2e5c36fa844bf0888b10d41c080b7fa97e9e3d6fcd6a70ebcdaae155b4"
+    },
+    {
+      "path": "deliverables/移动项目1.5/验证证据/仓颉演示实录.md",
+      "bytes": 4543,
+      "sha256": "c2d644faedd41fad4b050fc4db879b7af75fbd64218010031d0f2e4a22850d2d"
+    },
+    {
+      "path": "deliverables/移动项目1.5/验证证据/移动端预期界面状态清单.md",
+      "bytes": 5825,
+      "sha256": "50539d258ae330cb0d38dadb96470ce757011250d71fa9a9bcc344efa6f1e75b"
+    },
+    {
+      "path": "deliverables/项目材料包v1.5-总索引.md",
+      "bytes": 6971,
+      "sha256": "7c766e20de28e6452c0d8e98b3cee830df48ba4b1fcbfefdddc6c17b617162fe"
+    },
+    {
+      "path": "docs/00-项目立项方案.md",
+      "bytes": 14566,
+      "sha256": "cb809cc9d292b7000a7aa348edc2cd682fbb6d2858d616b0a2a8d030d47ec7ed"
+    },
+    {
+      "path": "docs/01-环境与构建工作流.md",
+      "bytes": 6881,
+      "sha256": "d90dcdfdfcc17b61e399aed8c925fdfb700b2facc34e8925a540d4709c3cd2ea"
+    },
+    {
+      "path": "docs/02-仓颉技术验证报告.md",
+      "bytes": 8757,
+      "sha256": "fac397fa3f583f8a842e26fe957aba7c0da48932d2f776254580c5b49d5bd9e8"
+    },
+    {
+      "path": "docs/03-方案重定位-HarmonyOS可行性.md",
+      "bytes": 9982,
+      "sha256": "0672a2d8b4838f8532b42cae29455c78826c3e2ff5c0355635052d5e378dc331"
+    },
+    {
+      "path": "docs/04-性能优化与stdx就绪.md",
+      "bytes": 9666,
+      "sha256": "87885f7d1fe6d1da2bae0e7633b04c4849f0348705197360cd4f21a1c90a68d5"
+    },
+    {
+      "path": "docs/05-实验管线接口.md",
+      "bytes": 7099,
+      "sha256": "b151ce5a4f37295a2fee16b123c34dcea99531d366841dd8a53706d6d0002d38"
+    },
+    {
+      "path": "docs/06-实验管线验证结果.md",
+      "bytes": 7943,
+      "sha256": "8e85580f8bd3611630d5a48345610cf2de9fca9eb300c6c6ddef91c42f74e346"
+    },
+    {
+      "path": "docs/07-压缩代价实验.md",
+      "bytes": 8776,
+      "sha256": "973877d60ec2388a4b33e83374a62ab7f8b877f148740c808b7ebac690c4e110"
+    },
+    {
+      "path": "docs/08-k扫描与Pareto前沿.md",
+      "bytes": 6574,
+      "sha256": "16d042027105c682bc95cc85f770ae6f8464eafa4a903fb2dd3c121083304cfd"
+    },
+    {
+      "path": "docs/09-消息表示实验.md",
+      "bytes": 8025,
+      "sha256": "18ca48a8b280ba4d17b971b9acca1060c4ad4c0310c6f07eddc666543bad0b59"
+    },
+    {
+      "path": "docs/10-HarmonyOS应用设计.md",
+      "bytes": 12054,
+      "sha256": "4d6f2e949be9d8462e795be86ab232126ec572a01bb74a4ef0d486f84122aad3"
+    },
+    {
+      "path": "docs/11-HarmonyOS构建工作流.md",
+      "bytes": 19784,
+      "sha256": "87234f9dcf82e137c24d54a72cf04c882ae49f2ee51a792bb608657479da54c5"
+    },
+    {
+      "path": "docs/12-摘要预算敏感性.md",
+      "bytes": 7272,
+      "sha256": "df50c09591e4fb0d0ae2fa512efdc9d8567897ec78c4a3f86817406ea3daef54"
+    },
+    {
+      "path": "docs/12周上架执行计划.md",
+      "bytes": 12906,
+      "sha256": "c29395a4183fd4752c8353d0af47e9bdc655989b5a5cf791011dc375559a4f26"
+    },
+    {
+      "path": "docs/13-自适应k的负面结果.md",
+      "bytes": 7035,
+      "sha256": "22dede731d32a9dec375427821cb083d6d886ef099eb412183e5ecd441fad9f5"
+    },
+    {
+      "path": "docs/14-得分驱动自适应k.md",
+      "bytes": 9933,
+      "sha256": "14addd3169ff3fca4cf2eb76c1cd5ec5d01f2ba0e639e3b3cfbbd160f4237c37"
+    },
+    {
+      "path": "docs/AGC签名申请指南.md",
+      "bytes": 6804,
+      "sha256": "66f21462f209f8e8f8110a0b675bbf194182f26bbf98f8143afc88ebec665050"
+    },
+    {
+      "path": "docs/APP备案判定-免备案依据.md",
+      "bytes": 5349,
+      "sha256": "6d81f23e11abfbeaab23372680c39611c5ae6984be993523eb9abdb4ae578a65"
+    },
+    {
+      "path": "docs/ArkTS测试策略.md",
+      "bytes": 6744,
+      "sha256": "63f143c4d45121227915e0cb4d5ff172ddf897b777361611cafba95b66e2847c"
+    },
+    {
+      "path": "docs/Git-GitHub同步指南.md",
+      "bytes": 14026,
+      "sha256": "b5b7d2732ad662de9f886ad36845c1408f92d31e0ca1649d316917fc8c87dc98"
+    },
+    {
+      "path": "docs/上架任务与时间估算.md",
+      "bytes": 6448,
+      "sha256": "8fc8fc1a4f1d6e98f518ae50779c298f89e9faa3b809a0375bc54e098f7c605e"
+    },
+    {
+      "path": "docs/上架并行任务清单.md",
+      "bytes": 9218,
+      "sha256": "3abe4301ac8d0c06d54bf9f2f719ca33ef052a25d4acad845ebe995618ba1804"
+    },
+    {
+      "path": "docs/剩余9周工作盘点.md",
+      "bytes": 4184,
+      "sha256": "3b35dd48eb1d989d8778c8be7386724aef9ed68e80c393a730a49ff6b0db16f3"
+    },
+    {
+      "path": "docs/文件清单与整理记录.md",
+      "bytes": 7949,
+      "sha256": "1bf3d5869c01d4f03458861e96b22c86f94411a92ad892609c3886e1585b1573"
+    },
+    {
+      "path": "docs/立项PPT修订大纲-仓颉.md",
+      "bytes": 12336,
+      "sha256": "25768c5921c7adac95d62e8d7390876a76940a5631ebf7fb820bf2a9945f5dbc"
+    },
+    {
+      "path": "docs/立项PPT修订大纲-移动应用.md",
+      "bytes": 13554,
+      "sha256": "2d23b305e2b7831d495043bacf32c6e8609378346ab24936bc3ee9bbc0936548"
+    },
+    {
+      "path": "docs/软著填表指南.md",
+      "bytes": 13903,
+      "sha256": "3219111fa47b8a7852dce01931c3842f8156685482ba825b6ce094af27a88c3b"
+    },
+    {
+      "path": "docs/软著登记材料清单.md",
+      "bytes": 7137,
+      "sha256": "3879625a07411a3025dcf2dc7a11d57cc883b53baf8b87da39e07d6d5c8f38a4"
+    },
+    {
+      "path": "HarmonyOS端侧多智能体可行性调研报告.md",
+      "bytes": 45096,
+      "sha256": "68cb6b8c44b672bf32c04511cd438168f73cf3f16a1c1be80c0258abcea5d73b"
+    },
+    {
+      "path": "projects/offlinelib-core/README.md",
+      "bytes": 14339,
+      "sha256": "4b41aa0a61a8f3f9ed48b78fbff3eeaff2670f788edbb1321766abf998546842"
+    },
+    {
+      "path": "README.md",
+      "bytes": 13513,
+      "sha256": "25f06c8837e6af16658713a96b4e410759185014e22733739998ed30034565e3"
+    },
+    {
+      "path": "仓颉调研报告.md",
+      "bytes": 78691,
+      "sha256": "2fca281b4cc0ffbd3ca20a86d735cfc2f4246d9f571baa17ff6ed6ee38c201ce"
+    },
+    {
+      "path": "开题答辩-PPT文案-仓颉设计基础.md",
+      "bytes": 16840,
+      "sha256": "27292b0ce1503497f9ae41f6b38c8f9b734db15911b08d82e4dd547634c2fc8d"
+    },
+    {
+      "path": "开题答辩-PPT文案.md",
+      "bytes": 23106,
+      "sha256": "5f0c9bcf9d79ae903e833ea91fa3f5a933d7ba32eb89b75ae052dff1bf6fad00"
+    },
+    {
+      "path": "微信聊天AI助手调研报告.md",
+      "bytes": 17468,
+      "sha256": "5f689f152bddfdeb1913f9e7b9df699e4af5aa13dfd09d545a94a668c8d6a77b"
+    },
+    {
+      "path": "立项/README-提交说明.md",
+      "bytes": 8895,
+      "sha256": "3be1ae180f94ee942913bda198f498fbaa72b28b3f74125ae21423ecdd49cba9"
+    },
+    {
+      "path": "立项/代码仓进度说明-仓颉.md",
+      "bytes": 1229,
+      "sha256": "e8a1007fc1f19c35217cff5d28ce1b36e8df6d833315287facfcea1cebd507c6"
+    },
+    {
+      "path": "立项/代码仓进度说明-移动.md",
+      "bytes": 4158,
+      "sha256": "8d3017c9384f5210a079d22e52d4c243489bc8278d6c479bb2485cffc5849476"
+    },
+    {
+      "path": "立项/报告与PPT一致性比对.md",
+      "bytes": 7887,
+      "sha256": "3cfe2d7c45ee3d5a84219b7e3c6ea178e3a5972cedad1027a1a242b33dae8535"
+    },
+    {
+      "path": "端侧多智能体研究报告.md",
+      "bytes": 63386,
+      "sha256": "ee2e95819ced764347a11096d5ff44ade41fa6df9209a09da856914beeeab60e"
+    }
+  ]
+}

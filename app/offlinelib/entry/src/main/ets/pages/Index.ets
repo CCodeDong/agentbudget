@@ -503,12 +503,30 @@ struct Index {
   // 视图片段
   // -------------------------------------------------------------------------
 
-  /** 把带高亮的文本渲染成多个 Span。 */
+  /**
+   * 把带高亮的文本渲染成多个 Span。
+   *
+   * ⚠️ 这里曾经有一个**数据丢失 bug**，修的时候务必保留这段注释：
+   *
+   *   旧写法只输出「匹配词本身」：
+   *     Span(开头文字) + ForEach(每个匹配词) + Span(结尾文字)
+   *
+   *   结果——**两个匹配之间的文字永远不会被输出**。单处命中时看不出来，
+   *   多处命中就变成错句：原文「存在预算矛盾，……都要在预算内决定」
+   *   被渲染成「存在预算预算内决定」，中间整段消失，读起来是病句。
+   *
+   *   正确做法：每次输出匹配词之前，先把「上一个匹配结尾 → 本次匹配开头」
+   *   之间的文字补上。开头那段和结尾那段仍然在循环外输出。
+   */
   @Builder
   highlightText(text: string, spans: Span[]) {
     Text() {
       Span(text.substring(0, spans.length > 0 ? spans[0].start : text.length))
-      ForEach(spans, (s: Span) => {
+      ForEach(spans, (s: Span, i: number) => {
+        // 补上两个匹配之间的文字（第一个匹配之前那段已由上面输出）
+        if (i > 0) {
+          Span(text.substring(spans[i - 1].end, s.start))
+        }
         Span(text.substring(s.start, s.end))
           .fontColor($r('app.color.danger'))
           .fontWeight(FontWeight.Bold)

@@ -111,10 +111,15 @@ def bench():
 
 
 def eval_corpus():
-    """用仓库自己的 markdown 文档做真实语料，评估检索质量。
+    """用**冻结语料** `eval-corpus/` 评估检索质量。
 
     这一步回答的是老师那条批评："全文检索技术路线无法核实"——
     核实的标准不是"代码能跑"，而是"在真实资料上检索得准"。
+
+    为什么要冻结语料：早期版本直接扫仓库根目录的 markdown，
+    于是**仓库内容一变，指标就漂**（2026-11-04 整理目录后精确率从 89.4% 变成 59.9%，
+    两个数各自都真实，但被测文档不是同一批）。冻结后这个数字才可比、可复现。
+    语料与清单由 `tools/make_eval_corpus.py` 生成。
     """
     code = build()
     if code != 0:
@@ -123,8 +128,15 @@ def eval_corpus():
     if not entry.exists():
         print(f"[olib] 找不到评估入口：{entry}")
         return 2
-    print("[olib] 语料 = 仓库根目录下的 markdown 文档")
-    return run_node([str(entry), str(ROOT)], CORE)
+
+    corpus = ROOT / "eval-corpus"
+    if not corpus.exists():
+        print("[olib] 找不到冻结语料 eval-corpus/")
+        print("         先运行：python tools\\make_eval_corpus.py")
+        return 2
+    n = len(list(corpus.rglob("*.md")))
+    print(f"[olib] 语料 = eval-corpus/（冻结快照，{n} 篇）")
+    return run_node([str(entry), str(corpus)], CORE)
 
 
 def clean():
