@@ -39,8 +39,8 @@
 | 调度器库 | `projects/agentbudget4cj/` | ✅ **29 个单元测试通过** |
 | 覆盖率 | `projects/agentbudget4cj/_out/coverage_html/` | ✅ 库行覆盖 **88.6%** / 分支 **66.8%** |
 | 可执行文件 | `projects/agentbudget4cj/bin/agentbudget4cj.exe` | ✅ 11.75 MB |
-| 课程设计报告 | `deliverables/仓颉语言/课程设计报告.docx` | ✅ |
-| 答辩 PPT | `deliverables/仓颉语言/答辩.pptx` | ✅ 18 张 |
+| 课程设计报告 | `deliverables/仓颉项目1.5/报告与PPT/仓颉语言-课程设计报告.docx` | ✅ |
+| 答辩 PPT | `deliverables/仓颉项目1.5/报告与PPT/仓颉语言-结课答辩.pptx` | ✅ 18 张 |
 | 演示实录 | `deliverables/移动项目1.5/验证证据/仓颉演示实录.md` | ✅ 脚本实际执行捕获，5 段 |
 
 ### 移动应用开发课程
@@ -50,8 +50,8 @@
 | HarmonyOS 应用 | `app/harmony/` | ✅ 10 个 ArkTS 模块 |
 | 安装包 | `app/harmony/_out/entry-default-unsigned.hap` | ✅ 221,866 B，`BUILD SUCCESSFUL` |
 | 真实 A2A 集成 | `app/harmony/entry/src/main/ets/agents/A2AAgentServer.ets` | ✅ `@hms.ai.A2A` 服务端 |
-| 课程设计报告 | `deliverables/移动应用开发/课程设计报告.docx` | ✅ |
-| 答辩 PPT | `deliverables/移动应用开发/答辩.pptx` | ✅ 16 张 |
+| 课程设计报告 | `deliverables/移动项目1.5/报告与PPT/移动应用开发-课程设计报告.docx` | ✅ |
+| 答辩 PPT | `deliverables/移动项目1.5/报告与PPT/移动应用开发-结课答辩.pptx` | ✅ 16 张 |
 | 演示素材 | `deliverables/移动项目1.5/验证证据/移动端预期界面状态清单.md` | ⏳ 待真机录制 |
 
 ### 共用
